@@ -11,10 +11,39 @@ char* letters = "abcdefghijklmnopqrstuvwxyz, .";
 char digs[36] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 char int2baseDigits[100];
 
-
-// converted from python at
+// algorithm converted from python at
 // https://github.com/cakenggt/Library-Of-Pybel/blob/master/library_of_babel.py
 
+char *baseConvert(int base, int num) {
+    // adapted from https://stackoverflow.com/a/19073176
+    char charSet[36] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    int i;
+    char buf[66]; //64 bits
+
+    // boundary check
+    if (base < 2 || base > 62)
+        // TODO: consider throwing an error here
+        return NULL;
+    if (!num)
+        return strdup("0"); // base is 0 case, throw error
+
+    buf[65] = '\0';
+    i = 65;
+
+    if (num > 0) {
+        while (num) {
+            buf[--i] = digits[num % base];
+            num /= base;
+        }
+    } else { // case where
+        while(num) {
+            buf[--i] = digits[-(num % base)];
+            num /= base;
+
+        buf[--i] = '-';
+    }
+    return strdup(buf + i);
+}
 
 static char* toText(int x) {
     int sign;
@@ -166,14 +195,20 @@ static char* search(char* search_str) {
 static void runTests() {
     char* test1 = "a";
     char* test2 = "ba";
+    char* test3 = "hello kitty";
     int result1 = stringToNumber(test1);
-    printf("%d\n", result1); //should be 0
+    assert(result1 == 0);
+    //printf("%d\n", result1); //should be 0
     int result2 = stringToNumber(test2);
-    printf("%d\n", result2); //should be 29
+    assert(result2 == 29);
+    //printf("%d\n", result2); //should be 29
+    char* result3 = toText(int(int2base(test3
     char* result3 = int2base(4);
-    printf("%s\n", result3); //should be 4
+    assert(result3 == 4);
+    //printf("%s\n", result3); //should be 4
     char* result4 = int2base(10);
-    printf("%s\n", result4); //should be A
+    //printf("%s\n", result4); //should be A
+    assert(result4 == 'A');
     return;
 }
 
