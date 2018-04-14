@@ -5,10 +5,10 @@
 #include <time.h>
 #include <math.h>
 
-const size_t NUMCHARS = 29; 
+const size_t NUMCHARS = 29;
 const size_t BASE = 36;
 char* letters = "abcdefghijklmnopqrstuvwxyz, .";
-char digs[36] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; 
+char digs[36] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 char int2baseDigits[100];
 
 
@@ -61,9 +61,11 @@ static char* int2base(int x) {
     }
     while (x > 0) {
         char charDigit = digs[x % BASE];
-	char* digit = &charDigit;
-	digits = strcat(digit, digits);
-	x = (int) x / BASE;
+        char digit[2];
+        digit[0] = charDigit;
+        digit[1] = '\0';
+        digits = strcat(digit, digits);
+        x = (int) x / BASE;
     }
     strcpy(int2baseDigits, digits);
     return int2baseDigits;
