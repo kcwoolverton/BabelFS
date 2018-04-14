@@ -7,6 +7,7 @@
 
 const size_t NUMCHARS = 29;
 const size_t BASE = 36;
+const size_t PAGELENGTH = 3239;
 char* letters = "abcdefghijklmnopqrstuvwxyz, .";
 char digs[36] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 char int2baseDigits[100];
@@ -196,19 +197,36 @@ static void runTests() {
     char* test1 = "a";
     char* test2 = "ba";
     char* test3 = "hello kitty";
+    char* test4a = "asaskjkfsdf:2:2:2:33";
+    char* test4b = "asasrkrtjfsdf:2:2:2:33";
+    char* test7 = ".................................................";
+
     int result1 = stringToNumber(test1);
     assert(result1 == 0);
     //printf("%d\n", result1); //should be 0
+
     int result2 = stringToNumber(test2);
     assert(result2 == 29);
     //printf("%d\n", result2); //should be 29
-    char* result3 = toText(int(int2base(test3
-    char* result3 = int2base(4);
-    assert(result3 == 4);
-    //printf("%s\n", result3); //should be 4
-    char* result4 = int2base(10);
-    //printf("%s\n", result4); //should be A
-    assert(result4 == 'A');
+
+    char* result3 = toText(baseConvert(int2base(stringToNumber(test3), 36), 36));
+    assert(result3 == "hello kitty");
+
+    char* result4a = sizeof(getPage(test4a));
+    assert(result4a == PAGELENGTH);
+    char* result4b = sizeof(getPage(test4b));
+    assert(result4b == PAGELENGTH);
+
+    char* result5 = int2base(4);
+    assert(result5 == 4);
+    //printf("%s\n", result5); //should be 4
+
+    char* result6 = int2base(10);
+    //printf("%s\n", result6); //should be A
+    assert(result6 == 'A');
+
+    assert(strstr(getPage(search(test7)), test7) != NULL);
+
     return;
 }
 
