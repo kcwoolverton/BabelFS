@@ -5,12 +5,13 @@
 #include <time.h>
 #include <math.h>
 
+
 const size_t NUMCHARS = 29;
 const size_t BASE = 36;
-const size_t PAGELENGTH = 3239;
 char* letters = "abcdefghijklmnopqrstuvwxyz, .";
 char digs[36] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 char int2baseDigits[100];
+char toTextDigits[100];
 const int length_of_page = 3239;
 
 // algorithm converted from python at
@@ -18,7 +19,7 @@ const int length_of_page = 3239;
 
 char *baseConvert(int base, int num) {
     // adapted from https://stackoverflow.com/a/19073176
-    char charSet[36] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    char charSet[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
     int i;
     char buf[66]; //64 bits
 
@@ -31,25 +32,24 @@ char *baseConvert(int base, int num) {
 
     buf[65] = '\0';
     i = 65;
-
     if (num > 0) {
         while (num) {
-            buf[--i] = digits[num % base];
+            buf[--i] = charSet[num % base];
             num /= base;
         }
     } else { // case where
         while(num) {
-            buf[--i] = digits[-(num % base)];
+            buf[--i] = charSet[-(num % base)];
             num /= base;
-
+        }
         buf[--i] = '-';
     }
     return strdup(buf + i);
 }
 
-static char* toText(int x) {
+static char *toText(int x) {
     int sign;
-    char* digits;
+    char* digits = "";
     if (x < 0) {
         sign = -1;
     }
@@ -61,18 +61,23 @@ static char* toText(int x) {
     }
     x = x * sign;
     while (x > 0) {
-        digits = strcat(&letters[x % 29], digits);
-    x = (int) x / 29;
+        char charDigit = digs[x % BASE];
+        char digit[2];
+        digit[0] = charDigit;
+        digit[1] = '\0';
+        digits = strcat(digit, digits);
+        x = (int) x / 29;
     }
     if (sign == -1) {
         char* newChar = "-";
-    digits = strcat(newChar, digits);
+        digits = strcat(newChar, digits);
     }
-    return digits;
+    strcpy(toTextDigits, digits);
+    return toTextDigits;
 }
 
 
-static char* int2base(int x) {
+static char *int2base(int x) {
     int sign;
 
     if (x < 0) {
@@ -100,19 +105,6 @@ static char* int2base(int x) {
     }
     strcpy(int2baseDigits, digits);
     return int2baseDigits;
-}
-
-
-static int stringToNumber(char* string) {
-    int result = 0;
-    int i = 0;
-    size_t strSize = strlen(string);
-    for (i = 0; i < strSize; ++i) {
-        char* ind = index(letters, string[strSize - i - 1]);
-    int indLoc = (int) (ind - letters); // yay pointer math
-    result = result + indLoc * pow(29, i);
-    }
-    return result;
 }
 
 static double random01() {
@@ -147,6 +139,149 @@ void append(char* s, char c)
         s[len+1] = '\0';
 }
 
+
+/* def getPage(address):
+    hex_addr, wall, shelf, volume, page = address.split(':')
+    volume = volume.zfill(2)
+    page = page.zfill(3)
+    loc_int = int(page+volume+shelf+wall)
+    key = int(hex_addr, 36)
+    key -= loc_int*loc_mult
+    str_36 = int2base(key, 36)
+    result = toText(int(str_36, 36))
+
+
+
+
+    if len(result) < length_of_page:
+        #adding pseudorandom chars
+        random.seed(result)
+        digs = 'abcdefghijklmnopqrstuvwxyz, .'
+        while len(result) < length_of_page:
+            result += digs[int(random.random()*len(digs))]
+    elif len(result) > length_of_page:
+        result = result[-length_of_page:]
+    return result
+*/
+
+char *getPage(char *address) {
+    size_t vol_len;
+    size_t page_len;
+    int i;
+    int j;
+    char volume[2];
+    char page[3];
+    int loc_int;
+    int page_int;
+    int volume_int;
+    int shelf_int;
+    int wall_int;
+    //TODO, this needs initialized length
+    char *key_str;
+    int key;
+    int loc_mult;
+    //TODO, this needs initialized length
+    char *str_36;
+    //TODO, this needs initialized length
+    char *result;
+    int rand_index;
+    int digs_len;
+
+    // address.split(':')
+    const char colon[2] = ":";
+    char *hex_addr = strtok(address, colon);
+    printf("Hex_addr is: %s\n", hex_addr);
+    char *wall = strtok(NULL, colon);
+    printf("Wall is: %s\n", wall);
+    char *shelf = strtok(NULL, colon);
+    printf("Shelf is: %s\n", shelf);
+    char *temp_volume = strtok(NULL, colon);
+    printf("Volume is: %s\n", temp_volume);
+    char *temp_page = strtok(NULL, colon);
+    printf("Page is: %s\n", temp_page);
+
+    //volume = volume.zfill(2) & page = page.zfill(3)
+    vol_len = strlen(temp_volume);
+    page_len = strlen(temp_page);
+
+    j = vol_len;
+    for (i = 1; i >= 0; i--) {
+        if (vol_len > 0) {
+            volume[i] = temp_volume[j];
+        }
+        else {
+            volume[i] = '0';
+        }
+        --j;
+    }
+    j = page_len;
+    for (i = 2; i >= 0; i--) {
+        if (page_len > 0) {
+            page[i] = temp_page[j];
+        }
+        else {
+            page[i] = '0';
+        }
+        --j;
+    }
+
+    //loc_int = int(page+volume+shelf+wall)
+    page_int = atoi(page);
+    volume_int = atoi(volume);
+    shelf_int = atoi(shelf);
+    wall_int = atoi(wall);
+    loc_int = page_int + volume_int + shelf_int + wall_int;
+
+    //key = int(hex_addr, 36) & key -= loc_int*loc_mult
+    loc_mult = pow(30, length_of_page);
+    // TODO: need strcpy
+    key_str = baseConvert(36, atoi(hex_addr));
+    key = atoi(key_str);
+    key = key - (loc_int*loc_mult);
+
+    //str_36 = int2base(key, 36) & result = toText(int(str_36, 36))
+    // TODO: need strcpy
+    str_36 = int2base(key);
+    // TODO: need strcpy
+    result = toText(atoi(baseConvert(36, atoi(str_36))));
+
+/*
+        while len(result) < length_of_page:
+            result += digs[int(random.random()*len(digs))]
+    elif len(result) > length_of_page:
+        result = result[-length_of_page:]
+    return result */
+
+    if (strlen(result) < length_of_page) {
+        // seed pseudorandom generator with the result
+        srand(atoi(result));
+        digs_len = strlen(digs);
+        while (strlen(result) < length_of_page) {
+            rand_index = (double)rand() / (double)((unsigned)RAND_MAX + 1) * digs_len;
+            result = strcat(result, &digs[rand_index]);
+        }
+    }
+    else if (strlen(result) > length_of_page) {
+        char *temp;
+        strcpy(temp, result + (strlen(result) - length_of_page + 1));
+        strcpy(result, temp);
+    }
+    return result;
+}
+
+static int stringToNumber(char* string) {
+    int result = 0;
+    int i = 0;
+    size_t strSize = strlen(string);
+    for (i = 0; i < strSize; ++i) {
+        char* ind = index(letters, string[strSize - i - 1]);
+    int indLoc = (int) (ind - letters); // yay pointer math
+    result = result + indLoc * pow(29, i);
+    }
+    return result;
+}
+
+/*
 static char* search(char* search_str) {
     printf("%s\n", "check0");
     srand(time(NULL));
@@ -264,7 +399,7 @@ static char* search(char* search_str) {
 
     return key_str;
 }
-
+*/
 static void runTests() {
     char* test1 = "a";
     char* test2 = "ba";
@@ -274,33 +409,37 @@ static void runTests() {
     char* test7 = ".................................................";
 
     int result1 = stringToNumber(test1);
-    assert(result1 == 0);
-    //printf("%d\n", result1); //should be 0
+    printf("Should be 0: %d\n", result1);
 
     int result2 = stringToNumber(test2);
-    assert(result2 == 29);
-    //printf("%d\n", result2); //should be 29
+    printf("Should be 29: %d\n", result2);
 
-    char* result3 = toText(baseConvert(int2base(stringToNumber(test3), 36), 36));
-    assert(result3 == "hello kitty");
 
-    char* result4a = sizeof(getPage(test4a));
-    assert(result4a == PAGELENGTH);
-    char* result4b = sizeof(getPage(test4b));
-    assert(result4b == PAGELENGTH);
+    // There is a serious problem here
+    char *convertedBaseString = baseConvert(36, atoi(int2base(atoi(test3))));
+    int convertedBaseInt = atoi(convertedBaseString);
+    printf("Converted base (string) is: %s\n", convertedBaseString);
+    printf("Converted base (int) is: %d\n", convertedBaseInt);
+    char* result3 = toText(convertedBaseInt);
+    printf("Should be hello kitty: %s\n", result3);
+
+    int result4a = strlen(getPage(test4a));
+    printf("Should be length_of_page (so 3239): %d\n", result4a);
+
+    int result4b = strlen(getPage(test4b));
+    printf("Should be length_of_page (so 3239): %d\n", result4b);
 
     char* result5 = int2base(4);
-    assert(result5 == 4);
-    //printf("%s\n", result5); //should be 4
+    printf("Should be 4: %s\n", result5);
 
     char* result6 = int2base(10);
-    //printf("%s\n", result6); //should be A
-    assert(result6 == 'A');
+    printf("Should be A; %s\n", result6);
 
-    assert(strstr(getPage(search(test7)), test7) != NULL);
+    //strstr(getPage(search(test7)), test7) != NULL;
 
     return;
 }
+
 
 int main(int argc, char *argv[]) {
     runTests();
