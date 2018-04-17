@@ -115,7 +115,7 @@ static int stringToNumber(char* string) {
     return result;
 }
 
-static double random01() {
+static int random01() {
     printf("%s\n", "in random01()");
     double random;
     double rand_max; 
@@ -123,7 +123,7 @@ static double random01() {
     printf("%s\n", "random set");
     rand_max = (double)RAND_MAX;
     printf("%s\n", "rand_max set");
-    return random/rand_max;
+    return int(random/rand_max);
 }
 
 static int intRandomDig(int digLength) {
@@ -151,11 +151,11 @@ static char* search(char* search_str) {
     printf("%s\n", "check0");
     srand(time(NULL));
     printf("%s\n", "check0.5");
-    double* wallRandom;
-    double* shelfRandom;
-    double* volumeRandom;
-    double* pageRandom;
-    double* depthRandom;
+    int wallRandom;
+    int shelfRandom;
+    int volumeRandom;
+    int pageRandom;
+    int depthRandom;
 
     int loc_int;
     int depth;
@@ -188,27 +188,27 @@ static char* search(char* search_str) {
 
     printf("%s\n", "check0.7");
 
-    *wallRandom = random01() * 4;
+    wallRandom = random01() * 4;
     printf("%s\n", "check0.75");
-    (*shelfRandom) = random01() * 5;
-    (*volumeRandom) = random01() * 32;
-    (*pageRandom) = random01() * 410;
-    (*depthRandom) = random01();
+    shelfRandom = random01() * 5;
+    volumeRandom = random01() * 32;
+    pageRandom = random01() * 410;
+    depthRandom = random01();
 
     printf("%s\n", "check0.8");
 
     strcpy(volume, "00");
     strcpy(page, "000");
 
-    depth = (*depthRandom) * (length_of_page - strlen(search_str));
+    depth = depthRandom * (length_of_page - strlen(search_str));
     loc_mult = pow(30, length_of_page);
 
     printf("%s\n", "check1");
 
-    wall = (char*) wallRandom;
-    shelf = (char*) shelfRandom;
-    volumeNumber = (char*) volumeRandom;
-    pageNumber = (char*) pageRandom;
+    itoa(wallRandom, wall, 10);
+    itoa(shelfRandom, shelf, 10);
+    itoa(volumeRandom, volumeNumber, 10);
+    itoa(pageRandom, pageNumber, 10)
 
     printf("%s\n", "check2");
 
