@@ -139,31 +139,6 @@ void append(char* s, char c)
         s[len+1] = '\0';
 }
 
-
-/* def getPage(address):
-    hex_addr, wall, shelf, volume, page = address.split(':')
-    volume = volume.zfill(2)
-    page = page.zfill(3)
-    loc_int = int(page+volume+shelf+wall)
-    key = int(hex_addr, 36)
-    key -= loc_int*loc_mult
-    str_36 = int2base(key, 36)
-    result = toText(int(str_36, 36))
-
-
-
-
-    if len(result) < length_of_page:
-        #adding pseudorandom chars
-        random.seed(result)
-        digs = 'abcdefghijklmnopqrstuvwxyz, .'
-        while len(result) < length_of_page:
-            result += digs[int(random.random()*len(digs))]
-    elif len(result) > length_of_page:
-        result = result[-length_of_page:]
-    return result
-*/
-
 char *getPage(char *address) {
     size_t vol_len;
     size_t page_len;
@@ -245,13 +220,6 @@ char *getPage(char *address) {
     // TODO: need strcpy
     result = toText(atoi(baseConvert(36, atoi(str_36))));
 
-/*
-        while len(result) < length_of_page:
-            result += digs[int(random.random()*len(digs))]
-    elif len(result) > length_of_page:
-        result = result[-length_of_page:]
-    return result */
-
     if (strlen(result) < length_of_page) {
         // seed pseudorandom generator with the result
         srand(atoi(result));
@@ -281,7 +249,6 @@ static int stringToNumber(char* string) {
     return result;
 }
 
-/*
 static char* search(char* search_str) {
     printf("%s\n", "check0");
     srand(time(NULL));
@@ -399,7 +366,7 @@ static char* search(char* search_str) {
 
     return key_str;
 }
-*/
+
 static void runTests() {
     char* test1 = "a";
     char* test2 = "ba";
