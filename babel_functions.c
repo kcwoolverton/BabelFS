@@ -1,3 +1,7 @@
+// to compile: gcc -o babel babel_functions.c
+// to run: ./babel
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -134,6 +138,7 @@ static char* search(char* search_str) {
     char* key_str;
 
     size_t i;
+    int key_int;
 
     strcpy(volume + strlen(volume) - strlen(volumeNumber));
     strcpy(page + strlen(page) - strlen(pageNumber));
@@ -151,13 +156,20 @@ static char* search(char* search_str) {
 
     hex_addr = int2base(stringToNumber(search_str) + (loc_int * loc_mult), 36);
 
-    key_str = append(hex_addr, ':');
+    key_int = append(hex_addr, ':');
+    key_str = (char*) &key_int;
     key_str = concat(key_str, wall);
-    key_str = append(key_str, ':');
+
+    key_int = append(key_str, ':');
+    key_str = (char*) &key_int;
     key_str = concat(key_str, shelf);
-    key_str = append(key_str, ':');
+
+    key_int = append(key_str, ':');
+    key_str = (char*) &key_int;
     key_str = concat(key_str, volume);
-    key_str = append(key_str, ':');
+
+    key_int = append(key_str, ':');
+    key_str = (char*) &key_int;
     key_str = concat(key_str, page);
 
     return key_str;
