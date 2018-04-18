@@ -226,25 +226,26 @@ char *getPage(const char *address) {
     key = key - (loc_int*loc_mult);
 
     //str_36 = int2base(key, 36) & result = toText(int(str_36, 36))
-    // TODO: need strcpy
     str_36 = int2base(key);
-    // TODO: need strcpy
     int baseConverted = atoi(baseConvert(36, atoi(str_36)));
     result = toText(baseConverted);
-    printf("Result after toText is: %s\n", result);
-    printf("Length of result is: %d\n", strlen(result));
     if (strlen(result) < length_of_page) {
         // seed pseudorandom generator with the result
         srand(stringToNumber(result));
         digs_len = strlen(digs);
         while (strlen(result) < length_of_page) {
             rand_index = (double)rand() / (double)((unsigned)RAND_MAX + 1) * digs_len;
-            result = strcat(result, &digs[rand_index]);
+            char charDigit = digs[rand_index];
+            char digit[2];
+            digit[0] = charDigit;
+            digit[1] = '\0';
+            result = strcat(result, digit);
         }
     }
     else if (strlen(result) > length_of_page) {
-        char *temp;
-        strcpy(temp, result + (strlen(result) - length_of_page + 1));
+        char *temp = "";
+        char *pointerToEnd = &result[strlen(result) - 1];
+        strcpy(temp, pointerToEnd - length_of_page);
         strcpy(result, temp);
     }
     return result;
