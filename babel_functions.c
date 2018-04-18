@@ -47,6 +47,18 @@ char *baseConvert(int base, int num) {
     return strdup(buf + i);
 }
 
+static int stringToNumber(char* string) {
+    int result = 0;
+    int i = 0;
+    size_t strSize = strlen(string);
+    for (i = 0; i < strSize; ++i) {
+        char* ind = index(letters, string[strSize - i - 1]);
+    int indLoc = (int) (ind - letters); // yay pointer math
+    result = result + indLoc * pow(29, i);
+    }
+    return result;
+}
+
 static char *toText(int x) {
     int sign;
     char* digits = "";
@@ -93,7 +105,9 @@ static char *int2base(int x) {
     char* digits = "";
     char* neg = "-";
     if (sign < 0) {
+        printf("Before adding the negative sign");
         digits = strcat(neg, digits);
+        printf("After adding the negative sign");
     }
     while (x > 0) {
         char charDigit = digs[x % BASE];
@@ -139,7 +153,8 @@ void append(char* s, char c)
         s[len+1] = '\0';
 }
 
-char *getPage(char *address) {
+char *getPage(const char *address) {
+    const size_t addr_len = strlen(address);
     size_t vol_len;
     size_t page_len;
     int i;
@@ -161,19 +176,15 @@ char *getPage(char *address) {
     char *result;
     int rand_index;
     int digs_len;
-
+    char new_addr[addr_len];
+    strcpy(new_addr, address);
     // address.split(':')
     const char colon[2] = ":";
-    char *hex_addr = strtok(address, colon);
-    printf("Hex_addr is: %s\n", hex_addr);
+    char *hex_addr = strtok(new_addr, colon);
     char *wall = strtok(NULL, colon);
-    printf("Wall is: %s\n", wall);
     char *shelf = strtok(NULL, colon);
-    printf("Shelf is: %s\n", shelf);
     char *temp_volume = strtok(NULL, colon);
-    printf("Volume is: %s\n", temp_volume);
     char *temp_page = strtok(NULL, colon);
-    printf("Page is: %s\n", temp_page);
 
     //volume = volume.zfill(2) & page = page.zfill(3)
     vol_len = strlen(temp_volume);
@@ -210,19 +221,21 @@ char *getPage(char *address) {
     //key = int(hex_addr, 36) & key -= loc_int*loc_mult
     loc_mult = pow(30, length_of_page);
     // TODO: need strcpy
-    key_str = baseConvert(36, atoi(hex_addr));
-    key = atoi(key_str);
+    key_str = baseConvert(36, stringToNumber(hex_addr));
+    key = stringToNumber(key_str);
     key = key - (loc_int*loc_mult);
 
     //str_36 = int2base(key, 36) & result = toText(int(str_36, 36))
     // TODO: need strcpy
     str_36 = int2base(key);
     // TODO: need strcpy
-    result = toText(atoi(baseConvert(36, atoi(str_36))));
-
+    int baseConverted = atoi(baseConvert(36, atoi(str_36)));
+    result = toText(baseConverted);
+    printf("Result after toText is: %s\n", result);
+    printf("Length of result is: %d\n", strlen(result));
     if (strlen(result) < length_of_page) {
         // seed pseudorandom generator with the result
-        srand(atoi(result));
+        srand(stringToNumber(result));
         digs_len = strlen(digs);
         while (strlen(result) < length_of_page) {
             rand_index = (double)rand() / (double)((unsigned)RAND_MAX + 1) * digs_len;
@@ -233,18 +246,6 @@ char *getPage(char *address) {
         char *temp;
         strcpy(temp, result + (strlen(result) - length_of_page + 1));
         strcpy(result, temp);
-    }
-    return result;
-}
-
-static int stringToNumber(char* string) {
-    int result = 0;
-    int i = 0;
-    size_t strSize = strlen(string);
-    for (i = 0; i < strSize; ++i) {
-        char* ind = index(letters, string[strSize - i - 1]);
-    int indLoc = (int) (ind - letters); // yay pointer math
-    result = result + indLoc * pow(29, i);
     }
     return result;
 }
@@ -383,12 +384,12 @@ static void runTests() {
 
 
     // There is a serious problem here
-    char *convertedBaseString = baseConvert(36, atoi(int2base(atoi(test3))));
-    int convertedBaseInt = atoi(convertedBaseString);
-    printf("Converted base (string) is: %s\n", convertedBaseString);
-    printf("Converted base (int) is: %d\n", convertedBaseInt);
-    char* result3 = toText(convertedBaseInt);
-    printf("Should be hello kitty: %s\n", result3);
+    // char *convertedBaseString = baseConvert(36, atoi(int2base(atoi(test3))));
+    // int convertedBaseInt = atoi(convertedBaseString);
+    // printf("Converted base (string) is: %s\n", convertedBaseString);
+    // printf("Converted base (int) is: %d\n", convertedBaseInt);
+    // char* result3 = toText(convertedBaseInt);
+    // printf("Should be hello kitty: %s\n", result3);
 
     int result4a = strlen(getPage(test4a));
     printf("Should be length_of_page (so 3239): %d\n", result4a);
@@ -400,7 +401,7 @@ static void runTests() {
     printf("Should be 4: %s\n", result5);
 
     char* result6 = int2base(10);
-    printf("Should be A; %s\n", result6);
+    printf("Should be A: %s\n", result6);
 
     //strstr(getPage(search(test7)), test7) != NULL;
 
