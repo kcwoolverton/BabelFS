@@ -80,8 +80,10 @@ static char *toText(int x) {
 }
 
 
-static char *int2base(int x) {
-    int sign;
+static char *int2base(long long x) {
+    printf("int2base called\n");
+
+    short sign;
 
     if (x < 0) {
         sign = -1;
@@ -96,19 +98,22 @@ static char *int2base(int x) {
     char* digits = "";
     char* neg = "-";
     if (sign < 0) {
-        printf("Before adding the negative sign");
         digits = strcat(neg, digits);
-        printf("After adding the negative sign");
     }
     while (x > 0) {
         char charDigit = digs[x % BASE];
         char digit[2];
         digit[0] = charDigit;
         digit[1] = '\0';
-        digits = strcat(digit, digits);
-        x = (int) x / BASE;
+        printf("checkpoint 1\n");
+        char* tempDigits = strcat(digit, digits);
+        printf("checkpoint 2\n");
+        digits = tempDigits;
+        printf("checkpoint 3\n");
+        x = x / BASE;
     }
     strcpy(int2baseDigits, digits);
+    printf("int2base concluded\n");
     return int2baseDigits;
 }
 
@@ -153,7 +158,6 @@ static long long stringToNumber(char* string) {
         char* ind = strchr(letters, string[strSize - i - 1]);
         int indLoc = (ind - letters); // yay pointer math
         result = result + indLoc * pow(29, i);
-        printf("result is %lli\n", result);
     }
     return result;
 }
@@ -255,9 +259,6 @@ char *getPage(const char *address) {
     }
     return result;
 }
-
-
-
 
 /*
 static char* search(char* search_str) {
@@ -395,13 +396,12 @@ static void runTests() {
 
     //TODO: fix (test case returns l instead of Hello Kitty)
     long long test3Num = stringToNumber(test3);
-    printf("checkpoint 0\n");
-    printf("%lli\n", test3Num);
+    printf("Should be 3008680564798846: %lli\n", test3Num);
     char* test3S = int2base(test3Num);
     printf("checkpoint 1\n");
     int test3ConvNumIsh = atoi(test3S);
     printf("checkpoint 1.5\n");
-    int test3ConvNum = baseConvert(36,test3ConvNumIsh);
+    int test3ConvNum = *baseConvert(36,test3ConvNumIsh);
     printf("checkpoint 2\n");
     char* result3 = toText(test3ConvNum);
     printf("Should be hello kitty: %s\n", result3);

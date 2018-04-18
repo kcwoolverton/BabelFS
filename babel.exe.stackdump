@@ -1,0 +1,10 @@
+Exception: STATUS_ACCESS_VIOLATION at eip=6115C113
+eax=0000004C ebx=0000004C ecx=00000000 edx=0000004C esi=00000000 edi=0000004C
+ebp=0062C928 esp=0062C924 program=D:\Official Stuff\Super Year\Filesystems\Library of Babel\BabelFS\babel.exe, pid 2128, thread main
+cs=0023 ds=002B es=002B fs=0053 gs=002B ss=002B
+Stack trace:
+Frame     Function  Args
+0062C928  6115C113 (0000004C, 0062C9E8, 004040F9, 00000001)
+0062CA64  61177423 (0053002B, 002B002B, 0062CD68, 0062D51C)
+0062CBF1  00000001 (1C0062CB, 9C0001CC, D30062CC, 68612A09)
+End of stack trace
