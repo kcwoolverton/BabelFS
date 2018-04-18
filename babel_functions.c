@@ -47,18 +47,6 @@ char *baseConvert(int base, int num) {
     return strdup(buf + i);
 }
 
-static int stringToNumber(char* string) {
-    int result = 0;
-    int i = 0;
-    size_t strSize = strlen(string);
-    for (i = 0; i < strSize; ++i) {
-        char* ind = index(letters, string[strSize - i - 1]);
-    int indLoc = (int) (ind - letters); // yay pointer math
-    result = result + indLoc * pow(29, i);
-    }
-    return result;
-}
-
 static char *toText(int x) {
     int sign;
     char* digits = "";
@@ -154,6 +142,20 @@ void append(char* s, char c)
         int len = strlen(s);
         s[len] = c;
         s[len+1] = '\0';
+}
+
+
+static long long stringToNumber(char* string) {
+    long long result = 0;
+    size_t i;
+    size_t strSize = strlen(string);
+    for (i = 0; i < strSize; ++i) {
+        char* ind = strchr(letters, string[strSize - i - 1]);
+        int indLoc = (ind - letters); // yay pointer math
+        result = result + indLoc * pow(29, i);
+        printf("result is %lli\n", result);
+    }
+    return result;
 }
 
 char *getPage(const char *address) {
@@ -255,18 +257,7 @@ char *getPage(const char *address) {
 }
 
 
-static long long stringToNumber(char* string) {
-    long long result = 0;
-    size_t i;
-    size_t strSize = strlen(string);
-    for (i = 0; i < strSize; ++i) {
-        char* ind = strchr(letters, string[strSize - i - 1]);
-        int indLoc = (ind - letters); // yay pointer math
-        result = result + indLoc * pow(29, i);
-        printf("result is %lli\n", result);
-    }
-    return result;
-}
+
 
 /*
 static char* search(char* search_str) {
@@ -388,6 +379,49 @@ static char* search(char* search_str) {
 }
 */
 
+static void runTests() {
+
+    char* test1 = "a";
+    char* test2 = "ba";
+    char* test3 = "hello kitty";
+    //char* test7 = "................................................."; //TODO - implement test7
+
+    long long result1 = stringToNumber(test1);
+    printf("Should be 0: %lli\n", result1);
+
+    long long result2 = stringToNumber(test2);
+    printf("Should be 29: %lli\n", result2);
+
+
+    //TODO: fix (test case returns l instead of Hello Kitty)
+    long long test3Num = stringToNumber(test3);
+    printf("checkpoint 0\n");
+    printf("%lli\n", test3Num);
+    char* test3S = int2base(test3Num);
+    printf("checkpoint 1\n");
+    int test3ConvNumIsh = atoi(test3S);
+    printf("checkpoint 1.5\n");
+    int test3ConvNum = baseConvert(36,test3ConvNumIsh);
+    printf("checkpoint 2\n");
+    char* result3 = toText(test3ConvNum);
+    printf("Should be hello kitty: %s\n", result3);
+
+    // int result4a = strlen(getPage(test4a));
+    // printf("Should be length_of_page (so 3239): %d\n", result4a);
+    //
+    // int result4b = strlen(getPage(test4b));
+    // printf("Should be length_of_page (so 3239): %d\n", result4b);
+    //
+    // char* result5 = int2base(4);
+    // printf("Should be 4: %s\n", result5);
+    //
+    // char* result6 = int2base(10);
+    // printf("Should be A; %s\n", result6);
+
+    //strstr(getPage(search(test7)), test7) != NULL;
+
+    return;
+}
 
 int main(int argc, char *argv[]) {
     runTests();
