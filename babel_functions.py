@@ -2,7 +2,7 @@ import string
 import random
 import sys
 
-length_of_page = 1
+length_of_page = 3239
 loc_mult = pow(30, length_of_page)
 title_mult = pow(30, 25)
 
@@ -155,17 +155,13 @@ def search(search_str):
     an = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
     digs = 'abcdefghijklmnopqrstuvwxyz, .'
     hex_addr = ''
-    depth = int(random.random()*(length_of_page-len(search_str)))
-    #random padding that goes before the text
-    front_padding = ''
-    for x in xrange(depth):
-        front_padding += digs[int(random.random()*len(digs))]
-    #making random padding that goes after the text
+    # Making random padding that goes after the text.
     back_padding = ''
-    for x in xrange(length_of_page-(depth+len(search_str))):
-        back_padding += digs[int(random.random()*len(digs))]
-    search_str = front_padding + search_str + back_padding
-    hex_addr = int2base(stringToNumber(search_str)+(loc_int*loc_mult), 36) #change to base 36 and add loc_int, then make string
+    for x in xrange(length_of_page-len(search_str)):
+        back_padding += ' '
+    search_str = search_str + back_padding
+    # Change to base 36 and add loc_int, then make string.
+    hex_addr = int2base(stringToNumber(search_str)+(loc_int*loc_mult), 36)
     key_str = hex_addr + ':' + wall + ':' + shelf + ':' + volume + ':' + page
     page_text = getPage(key_str)
     assert page_text == search_str, '\npage text:\n'+page_text+'\nstrings:\n'+search_str
