@@ -869,10 +869,15 @@ static int fat_write(const char *path, const char *buf, size_t size,
 	size_t bytes_read;
 	size_t starting_block;
 	metadata file_metadata;
-	char block_read[block_size];
+	char seed_read[block_size + 1];
+	char unencoded_read[2 * block_size + 1];
 	int check = 0;
 
-	printf("Inside write function.\n");
+	// These characters at the beginning are needed to determine whether
+	// we want to encode it into a seed or unencode it into text. The
+	// python script will remove them.
+	seed_read[0] = 'a';
+	unencoded_read[0] = 'b'
 
 	find_metadata(path, &file_metadata);
 
@@ -885,18 +890,24 @@ static int fat_write(const char *path, const char *buf, size_t size,
 
 	if (offset + size > file_metadata.size) {
 		check = fat_truncate(path, offset + size);
-		printf("Check is %d\n", check);
-
 		if (check != 0) {
-			printf("Truncate is sad, check Truncate\n");
 			return check;
 		}
 	}
 
 	current_block = find_offset(path, starting_block);
 
+	// Read the seed that was already in the disk
 	fseek(disk, block_size * current_block, SEEK_SET);
-	fread(block_read, block_size, 1, disk);
+	fread(seed_read + 1, block_size, 1, disk);
+
+	// Send nencode read seed request
+	fseek(asker, 0, SEEK_SET);
+	fwrite(seed_read, 1, block_size + 1, asker);
+
+	// Get answer from python program for the unencoded message
+	fseek(answer, 0, SEEK_SET);
+	fread(unencoded_read + 1, 1, 2 * block_size, answer);
 
 	bytes_read = size;
 
@@ -904,14 +915,20 @@ static int fat_write(const char *path, const char *buf, size_t size,
 		bytes_read = (block_size - offset);
 	}
 
-	memcpy(block_read + offset_in_block, buf, bytes_read);
+	// Do the write
+	memcpy(unencoded_read + 1 + offset_in_block, buf, bytes_read);
 
-	printf("Current block is %u in write.\n", current_block);
+	// Send ask for seed
+	fseek(asker, 0, SEEK_SET);
+	fwrite(unencoded_write, 1, 2 * block_size + 1, asker);
 
+	// Get answer from python program
+	fseek(answer, 0, SEEK_SET);
+	fread(seed_read, 1, block_size + 1, answer);
+
+	// Write the updated information to disk
 	fseek(disk, block_size * current_block, SEEK_SET);
-	fwrite(block_read, block_size, 1, disk);
-
-	printf("Bytes read is %u", bytes_read);
+	fwrite(seed_read, block_size + 1, 1, disk);
 
 	return bytes_read;
 }
