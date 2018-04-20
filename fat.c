@@ -877,7 +877,7 @@ static int fat_write(const char *path, const char *buf, size_t size,
 	// we want to encode it into a seed or unencode it into text. The
 	// python script will remove them.
 	seed_read[0] = 'a';
-	unencoded_read[0] = 'b'
+	unencoded_read[0] = 'b';
 
 	find_metadata(path, &file_metadata);
 
@@ -920,7 +920,7 @@ static int fat_write(const char *path, const char *buf, size_t size,
 
 	// Send ask for seed
 	fseek(asker, 0, SEEK_SET);
-	fwrite(unencoded_write, 1, 2 * block_size + 1, asker);
+	fwrite(unencoded_read, 1, 2 * block_size + 1, asker);
 
 	// Get answer from python program
 	fseek(answer, 0, SEEK_SET);
