@@ -116,7 +116,7 @@ def main():
             # This is the signal from the C code that it is time to stop
             if input_str == "?":
                 break
-            input_str = input_str.rstrip('\n')
+            input_str = input_str.rstrip('\n\x00')
             print("after rstrip, input_str is: " + input_str)
             if input_str[0] == 'u':
                 search_str = search(input_str[1:])
