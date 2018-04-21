@@ -235,5 +235,4 @@ def int2base(x, base):
     return ''.join(digits)
 
 if __name__ == "__main__":
-    input_dict= arg_check(sys.argv)
-    main(input_dict)
+    main()
