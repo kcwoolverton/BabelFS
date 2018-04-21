@@ -186,6 +186,8 @@ void fat_destroy(void* private_data)
 	fseek(disk, sizeof(superblock), SEEK_SET);
 	fwrite(FAT, sizeof(size_t), num_blocks, disk);
 
+	fclose(answer);
+	fclose(asker);
 	fclose(disk);
 	free(full_path);
 	free(current_path);
