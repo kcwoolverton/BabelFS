@@ -113,9 +113,9 @@ void* fat_init(struct fuse_conn_info *conn)
 	printf("2.2\n");
 	system(ask_command);
 	system(ans_command);
-	asker = fopen("ask", "w");
+	asker = fopen("./ask", "w");
 	printf("2.5\n");
-	answer = fopen("ans", "r");
+	answer = fopen("./ans", "r");
 	printf("3\n");
 	// Ensure that each request is properly flushed to asker
 	setlinebuf(asker);
