@@ -133,6 +133,9 @@ def main():
                     get_page_str = get_page_str.rstrip()
                     final_str = get_page_str + '\n'
             print("final str is: " + final_str)
+            # pad the length of the string to be 2 * block_length
+            current_length = len(final_str)
+            final_str = final_str + (' ' * ((2 * 4096) - current_length))
             answer.write(final_str)
             answer.flush()
 
