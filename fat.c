@@ -110,9 +110,11 @@ void* fat_init(struct fuse_conn_info *conn)
 	// Handles calls to the babel API
 	strcpy(ask_command, "mkfifo ask");
 	strcpy(ans_command, "mkfifo ans");
+	printf("2.2\n");
 	system(ask_command);
 	system(ans_command);
 	asker = fopen("ask", "w");
+	printf("2.5\n");
 	answer = fopen("ans", "r");
 	printf("3\n");
 	// Ensure that each request is properly flushed to asker
