@@ -925,7 +925,7 @@ static int fat_write(const char *path, const char *buf, size_t size,
 
 	// Get answer from python program for the unencoded message
 	fread(unencoded_read + 1, 1, 2 * block_size, answer);
-	printf("unencoded_read after read is: %s\n", unencoded_read);
+	printf("unencoded_read after fread is: %s\n", unencoded_read);
 
 	bytes_read = size;
 
