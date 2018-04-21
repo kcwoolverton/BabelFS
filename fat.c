@@ -1026,7 +1026,9 @@ static struct fuse_operations fat_oper = {
 
 int main(int argc, char *argv[])
 {
+	printf("hello\n");
 	current_path = get_current_dir_name();
+	printf("world\n");
 	return fuse_main(argc, argv, &fat_oper, NULL);
 }
 

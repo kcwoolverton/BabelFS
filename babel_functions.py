@@ -104,20 +104,21 @@ def test():
     assert test_string in getPage(search(test_string))
     print ('Tests completed')
 
-
 def main():
-    asker = open(ask, 'rb')
-    answer = open(ans, 'wb')
+    asker = open("ask", "rb")
+    answer = open("ans", "wb")
     while True:
-        input_str = asker.read()
+        input_str = asker.readline()
         if len(input_str) != 0:
+            input_str = input_str.rstrip('\n')
             if input_str[0] == 'u':
-                answer.write(search(input_str[1:]))
-                answer.flush()
+                search_str = search(input_str[1:])
+                final_str = search_str + '\n'
             elif input_str[0] == 'e':
-                answer.write(getPage(input_str[1:]))
-                answer.flush()
-
+                get_page_str = getPage(input_str[1:])
+                final_str = get_page_str + '\n'
+            answer.write(final_str)
+            answer.flush()
 
 def search(search_str):
     wall = str(int(random.random()*4))
