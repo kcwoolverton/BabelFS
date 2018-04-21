@@ -45,6 +45,9 @@ static char *full_path;
 static FILE *disk;
 static size_t *FAT;
 
+static FILE *asker;
+static FILE *answer;
+
 typedef struct {
 	unsigned long size;
 	size_t first_block;
@@ -95,6 +98,8 @@ size_t allocate_new_block() {
 
 void* fat_init(struct fuse_conn_info *conn)
 {
+	char ask_command[15];
+	char ans_command[15];
 	size_t path_len = strlen(disk_name) + strlen(current_path) + 2;
 	metadata root_metadata;
 	union superblock local_superblock;
