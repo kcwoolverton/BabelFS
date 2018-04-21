@@ -1,1 +1,2 @@
-gcc -g -Og `pkg-config fuse --cflags --libs` fat.c -o fat
+make:
+	gcc -g -Og `pkg-config fuse --cflags --libs` fat.c -o fat
