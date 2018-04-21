@@ -98,6 +98,8 @@ size_t allocate_new_block() {
 
 void* fat_init(struct fuse_conn_info *conn)
 {
+	char ask_command[15];
+	char ans_command[15];
 	printf("1\n");
 	size_t path_len = strlen(disk_name) + strlen(current_path) + 2;
 	metadata root_metadata;
@@ -106,6 +108,10 @@ void* fat_init(struct fuse_conn_info *conn)
 
 	printf("2\n");
 	// Handles calls to the babel API
+	strcpy(ask_command, "mkfifo ask");
+	strcpy(ans_command, "mkfifo ans");
+	system(ask_command);
+	system(ans_command);
 	asker = fopen("ask", "w");
 	answer = fopen("ans", "r");
 	printf("3\n");
@@ -1026,9 +1032,7 @@ static struct fuse_operations fat_oper = {
 
 int main(int argc, char *argv[])
 {
-	printf("hello\n");
 	current_path = get_current_dir_name();
-	printf("world\n");
 	return fuse_main(argc, argv, &fat_oper, NULL);
 }
 
