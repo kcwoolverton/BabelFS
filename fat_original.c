@@ -58,7 +58,7 @@ typedef struct {
 	size_t superblock_size;
 	size_t block_size;
 	char magic_number;
-	size_t free_space_start;	
+	size_t free_space_start;
 } fat_superblock;
 
 union superblock {
@@ -93,13 +93,13 @@ size_t allocate_new_block() {
 	return new_block_loc;
 }
 
-void* fat_init(struct fuse_conn_info *conn) 
-{ 
+void* fat_init(struct fuse_conn_info *conn)
+{
 	size_t path_len = strlen(disk_name) + strlen(current_path) + 2;
 	metadata root_metadata;
 	union superblock local_superblock;
 	size_t i;
-
+	system("python babel_functions_2.py &")
 	max_metadata = block_size / metadata_size;
 
 	/*Create the entire path name*/
@@ -144,7 +144,7 @@ void* fat_init(struct fuse_conn_info *conn)
 		disk = fopen(full_path, "r+");
 		fread(&local_superblock, sizeof(superblock), 1, disk);
 		fs_superblock = local_superblock.l_superblock;
-		
+
 		fseek(disk, sizeof(superblock), SEEK_SET);
 		fread(FAT, sizeof(size_t), num_blocks, disk);
 	}
@@ -177,7 +177,7 @@ void find_metadata(const char *path, metadata* file_metadata) {
 	char* token;
 	size_t block_num = 1;
 	size_t i;
-	
+
 	*file_metadata = fs_superblock.root_metadata;
 	path_copy = (char*) malloc(strlen(path) + 1);
 	strcpy(path_copy, path);
@@ -192,7 +192,7 @@ void find_metadata(const char *path, metadata* file_metadata) {
 		fread(current_metadata, sizeof(metadata), max_metadata, disk);
 		for (i = 0; i < max_metadata; i++) {
 			*file_metadata = current_metadata[i];
-			if (file_metadata->file_check && 
+			if (file_metadata->file_check &&
 				!strcmp(file_metadata->name, token)) {
 				break;
 			} else if (i == max_metadata - 1) {
@@ -201,7 +201,7 @@ void find_metadata(const char *path, metadata* file_metadata) {
 				free(current_metadata);
 				free(path_copy);
 				return;
-			} 	
+			}
 		}
 
 		block_num = file_metadata->first_block;
@@ -225,11 +225,11 @@ static int fat_getattr(const char *path, struct stat *stbuf)
 		find_metadata(path, &file_metadata);
 		if (file_metadata.file_check == 0) {
 			return -ENOENT;
-		} 
+		}
 		if (file_metadata.file_type == 1) {
 			stbuf->st_mode = S_IFDIR | 0755;
 			stbuf->st_nlink = 2;
-		} else if (file_metadata.file_type == 2) { 
+		} else if (file_metadata.file_type == 2) {
 			stbuf->st_mode = S_IFLNK | 0755;
 			stbuf->st_nlink = 1;
 		} else {
@@ -262,7 +262,7 @@ static int fat_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 	size_t i;
 
 	find_metadata(path, &dir_metadata);
-	
+
 	if (dir_metadata.file_check == 0) {
 		return -ENOENT;
 	} else if (dir_metadata.file_type != 1) {
@@ -286,7 +286,7 @@ static int fat_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 }
 /* When given the path for a new file, this function will find the path to the
  * new file and the parent directory of that file. */
-int find_parent_dir(const char *path, char *parent_path, char *file_name)  
+int find_parent_dir(const char *path, char *parent_path, char *file_name)
 {
 	size_t path_len = strlen(path);
 	char* start_of_name;
@@ -301,7 +301,7 @@ int find_parent_dir(const char *path, char *parent_path, char *file_name)
 	strncpy(file_name, start_of_name, name_size);
 	strncpy(parent_path, path, start_of_name - path);
 	parent_path[start_of_name - path] = '\0';
-	
+
 	/* Make sure we don't overflow our file_name. */
 	if ((path_len + start_of_name - path)  > (name_size - 1)) {
 		return -1;
@@ -315,7 +315,7 @@ int find_parent_dir(const char *path, char *parent_path, char *file_name)
 }
 
 /* Zero out an block at block_num */
-void zero_out_block(size_t block_num) 
+void zero_out_block(size_t block_num)
 {
 	char data_block[block_size];
 	memset(data_block, '0', block_size);
@@ -350,14 +350,14 @@ int free_metadata(metadata* current_metadata) {
 					}
 				}
 			}
-			
+
 			/* Add current block to free list and go through the next block
 			 * of directory if it exists */
 			next_block = FAT[current_block];
 			FAT[current_block] = fs_superblock.free_space_start;
 			fs_superblock.free_space_start = FAT[current_block];
 			current_block = next_block;
-			
+
 			if (current_block == 0) {
 				break;
 			}
@@ -378,7 +378,7 @@ int free_metadata(metadata* current_metadata) {
 }
 
 /*
- * Change valid bit for given path name, if free_blocks is non-zero, 
+ * Change valid bit for given path name, if free_blocks is non-zero,
  * will add blocks to free list
  */
 int remove_path(const char *path, size_t free_blocks){
@@ -409,7 +409,7 @@ int remove_path(const char *path, size_t free_blocks){
 		fseek(disk, current_block * block_size, SEEK_SET);
 		fread(current_data, sizeof(metadata), max_metadata, disk);
 		for (i = 0; i < max_metadata; i++) {
-			if (current_data[i].file_check == 1 && 
+			if (current_data[i].file_check == 1 &&
 					!strncmp(current_data[i].name, name, name_size)) {
 				current_data[i].file_check = 0;
 				start_of_delete = current_data[i];
@@ -434,7 +434,7 @@ int remove_path(const char *path, size_t free_blocks){
 	return -1;
 }
 
-/* Write metadata to specific block, 
+/* Write metadata to specific block,
  * rieturn 0 on success, -ENOMEM if no more space*/
 int write_metadata_to_block(size_t block_num, metadata *file_metadata) {
 	metadata* current_data;
@@ -465,7 +465,7 @@ int write_metadata_to_block(size_t block_num, metadata *file_metadata) {
 			}
 		}
 
-		if (FAT[current_block] == 0) {	
+		if (FAT[current_block] == 0) {
 			new_block = allocate_new_block();
 
 			if (new_block > num_blocks) {
@@ -485,7 +485,7 @@ int write_metadata_to_block(size_t block_num, metadata *file_metadata) {
 	return -1;
 }
 
-static int fat_mknod(const char *path, mode_t mode, dev_t rdev) 
+static int fat_mknod(const char *path, mode_t mode, dev_t rdev)
 {
 	size_t block_num;
 	size_t path_len = strlen(path);
@@ -497,8 +497,8 @@ static int fat_mknod(const char *path, mode_t mode, dev_t rdev)
 
 	parent_path = malloc(path_len);
 	check = find_parent_dir(path, parent_path, name);
-	
-	printf("The parent path is %s, name is %s.\n", parent_path, name); 
+
+	printf("The parent path is %s, name is %s.\n", parent_path, name);
 	if (check == -1) {
 		return -ENAMETOOLONG;
 	}
@@ -543,7 +543,7 @@ static int fat_mkdir(const char *path, mode_t mode)
 	if (check == -1) {
 		return -ENAMETOOLONG;
 	}
-	
+
 	/* Find the metadata of the parent directory. */
 	find_metadata(parent_path, &prev_dir);
 	if (prev_dir.file_check == 0) {
@@ -561,9 +561,9 @@ static int fat_mkdir(const char *path, mode_t mode)
 
 	/* Write the new metadata to the parent directory */
 	check = write_metadata_to_block(prev_dir.first_block, &new_dir);
-	
+
 	free(parent_path);
-	
+
 	return 0;
 }
 
@@ -670,7 +670,7 @@ static int fat_truncate(const char *path, off_t size)
 	if (check == -1) {
 		return -ENAMETOOLONG;
 	}
-	
+
 	/* Find the metadata of the parent directory. */
 	find_metadata(parent_path, &parent_dir);
 	if (parent_dir.file_check == 0) {
@@ -686,10 +686,10 @@ static int fat_truncate(const char *path, off_t size)
 		fread(current_data, sizeof(metadata), max_metadata, disk);
 		/* loop through current block of parent data until file metadata is found */
 		for (i = 2; i < max_metadata; i++) {
-			if (current_data[i].file_check == 1 && 
+			if (current_data[i].file_check == 1 &&
 					!strncmp(current_data[i].name, name, name_size)) {
 				old_size = current_data[i].size;
-				
+
 				/* update metadata and write it back to disk */
 				current_data[i].size = size;
 				num_blocks_needed = size/block_size;
@@ -744,7 +744,7 @@ static int fat_utimens(const char *path, const struct timespec ts[2])
 }
 
 static int fat_open(const char *path, struct fuse_file_info *fi)
-{	
+{
 	metadata file_metadata;
 
 	find_metadata(path, &file_metadata);
@@ -757,8 +757,8 @@ static int fat_open(const char *path, struct fuse_file_info *fi)
 	return 0;
 }
 
-int find_offset(const char *path, size_t starting_block) 
-{	
+int find_offset(const char *path, size_t starting_block)
+{
 	size_t current_block;
 	size_t i;
 	metadata file_metadata;
@@ -775,7 +775,7 @@ int find_offset(const char *path, size_t starting_block)
 
 	/* Find the block we want to start reading at. */
 	for (i = 0; i < starting_block; i++) {
-		
+
 		/* In this case, our offset is outside of the file. */
 		if (FAT[current_block] == 0) {
 			return 0;
@@ -849,7 +849,7 @@ static int fat_readlink(const char *path, char *buf, size_t size)
 
 static int fat_write(const char *path, const char *buf, size_t size,
 		     off_t offset, struct fuse_file_info *fi)
-{	
+{
 	size_t current_block;
 	size_t offset_in_block;
 	size_t bytes_read;
@@ -879,7 +879,7 @@ static int fat_write(const char *path, const char *buf, size_t size,
 		}
 	}
 
-	current_block = find_offset(path, starting_block); 
+	current_block = find_offset(path, starting_block);
 
 	fseek(disk, block_size * current_block, SEEK_SET);
 	fread(block_read, block_size, 1, disk);
