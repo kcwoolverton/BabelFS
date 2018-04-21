@@ -75,6 +75,7 @@ static  size_t max_metadata;
 
 /* Creates a . and .. entry for the new directory */
 void dir_initialize(metadata* current_metadata, metadata* parent_metadata) {
+	printf("in dir_initialize\n");
 	metadata *new_dir = (metadata*) calloc(max_metadata, metadata_size);
 	new_dir[0] = *parent_metadata;
 	strcpy(new_dir[0].name, "..");
@@ -178,6 +179,7 @@ void* fat_init(struct fuse_conn_info *conn)
 
 void fat_destroy(void* private_data)
 {
+	printf("in destroy\n");
 	union superblock u_superblock;
 	u_superblock.l_superblock = fs_superblock;
 	fseek(disk, 0, SEEK_SET);
@@ -199,6 +201,7 @@ void fat_destroy(void* private_data)
  * file_check value of 0 if file could not be found
  * */
 void find_metadata(const char *path, metadata* file_metadata) {
+	printf("in find_metadata\n");
 	char* path_copy;
 	char* token;
 	size_t block_num = 1;
@@ -240,6 +243,7 @@ void find_metadata(const char *path, metadata* file_metadata) {
 
 static int fat_getattr(const char *path, struct stat *stbuf)
 {
+	printf("in getattr\n");
 	int res = 0;
 	metadata file_metadata;
 
@@ -269,6 +273,7 @@ static int fat_getattr(const char *path, struct stat *stbuf)
 
 static int fat_access(const char *path, int mask)
 {
+	printf("in access\n");
 	metadata file_metadata;
 	find_metadata(path, &file_metadata);
 	if (file_metadata.file_check == 0) {
@@ -280,6 +285,7 @@ static int fat_access(const char *path, int mask)
 static int fat_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 		       off_t offset, struct fuse_file_info *fi)
 {
+	printf("in readdir\n");
 	metadata dir_metadata;
 	metadata current_metadata;
 	metadata* current_data;
@@ -314,6 +320,7 @@ static int fat_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
  * new file and the parent directory of that file. */
 int find_parent_dir(const char *path, char *parent_path, char *file_name)
 {
+	printf("in find_parent_dir\n");
 	size_t path_len = strlen(path);
 	char* start_of_name;
 
@@ -343,6 +350,7 @@ int find_parent_dir(const char *path, char *parent_path, char *file_name)
 /* Zero out an block at block_num */
 void zero_out_block(size_t block_num)
 {
+	printf("in zero_out_block\n");
 	char data_block[block_size];
 	memset(data_block, '0', block_size);
 	fseek(disk, block_num * block_size, SEEK_SET);
@@ -352,6 +360,7 @@ void zero_out_block(size_t block_num)
 
 /* Remove free blocks of everything under given metadata in tree */
 int free_metadata(metadata* current_metadata) {
+	printf("in free_metadata\n");
 	metadata next_metadata;
 	size_t current_block = current_metadata->first_block;
 	size_t next_block;
@@ -408,6 +417,7 @@ int free_metadata(metadata* current_metadata) {
  * will add blocks to free list
  */
 int remove_path(const char *path, size_t free_blocks){
+	printf("in remove_path\n");
 	size_t path_len = strlen(path);
 	char name[name_size];
 	char *parent_path;
@@ -463,6 +473,7 @@ int remove_path(const char *path, size_t free_blocks){
 /* Write metadata to specific block,
  * rieturn 0 on success, -ENOMEM if no more space*/
 int write_metadata_to_block(size_t block_num, metadata *file_metadata) {
+	printf("in write_metadata_to_block\n");
 	metadata* current_data;
 	size_t i;
 	size_t j;
@@ -510,6 +521,7 @@ int write_metadata_to_block(size_t block_num, metadata *file_metadata) {
 
 static int fat_mknod(const char *path, mode_t mode, dev_t rdev)
 {
+	printf("in mknod\n");
 	size_t block_num;
 	size_t path_len = strlen(path);
 	char name[name_size];
@@ -550,6 +562,7 @@ static int fat_mknod(const char *path, mode_t mode, dev_t rdev)
 
 static int fat_mkdir(const char *path, mode_t mode)
 {
+	printf("in mkdir\n");
 	metadata new_dir;
 	metadata prev_dir;
 	char name[name_size];
@@ -590,6 +603,7 @@ static int fat_mkdir(const char *path, mode_t mode)
 
 static int fat_unlink(const char *path)
 {
+	printf("in unlink\n");
 	int check;
 	check = remove_path(path, 1);
 	if (check != 0) {
@@ -612,6 +626,7 @@ static int fat_rmdir(const char *path)
 
 static int fat_symlink(const char *to, const char *from)
 {
+	printf("in synlink\n");
 	size_t from_len = strlen(from);
 	char from_name[name_size];
 	char *from_path;
@@ -669,6 +684,8 @@ static int fat_chown(const char *path, uid_t uid, gid_t gid)
 
 static int fat_truncate(const char *path, off_t size)
 {
+	printf("in truncate\n");
+	printf("size is: %d", size);
 	char name[name_size];
 	char* parent_path;
 	size_t path_size = strlen(path);
@@ -759,6 +776,7 @@ static int fat_utimens(const char *path, const struct timespec ts[2])
 
 static int fat_open(const char *path, struct fuse_file_info *fi)
 {
+	printf("in open\n");
 	metadata file_metadata;
 
 	find_metadata(path, &file_metadata);
@@ -773,6 +791,7 @@ static int fat_open(const char *path, struct fuse_file_info *fi)
 
 int find_offset(const char *path, size_t starting_block)
 {
+	printf("in find_offset\n");
 	size_t current_block;
 	size_t i;
 	metadata file_metadata;
@@ -802,7 +821,7 @@ int find_offset(const char *path, size_t starting_block)
 static int fat_read(const char *path, char *buf, size_t size, off_t offset,
 		    struct fuse_file_info *fi)
 {
-	printf('in read\n');
+	printf("in read\n");
 	size_t current_block;
 	size_t offset_in_block;
 	size_t bytes_read;
@@ -845,6 +864,7 @@ static int fat_read(const char *path, char *buf, size_t size, off_t offset,
 
 static int fat_readlink(const char *path, char *buf, size_t size)
 {
+	printf("in readlink\n");
 	metadata file_metadata;
 	size_t amount_copied = size - 1;
 	char file_block[block_size];
@@ -872,7 +892,7 @@ static int fat_readlink(const char *path, char *buf, size_t size)
 static int fat_write(const char *path, const char *buf, size_t size,
 		     off_t offset, struct fuse_file_info *fi)
 {
-	printf('in write\n');
+	printf("in write\n");
 	size_t current_block;
 	size_t offset_in_block;
 	size_t bytes_read;
@@ -940,6 +960,7 @@ static int fat_write(const char *path, const char *buf, size_t size,
 
 static int fat_statfs(const char *path, struct statvfs *stbuf)
 {
+	printf("in statfs\n");
 	size_t num_free_blocks = 1;
 	size_t current_block_num = fs_superblock.free_space_start;
 
@@ -971,6 +992,7 @@ static int fat_fsync(const char *path, int isdatasync,
 }
 
 static int fat_create(const char *path, mode_t mode, struct fuse_file_info *fi) {
+	printf("in create\n");
 	dev_t rdev;
 	return fat_mknod(path, mode | S_IFREG, rdev);
 }
