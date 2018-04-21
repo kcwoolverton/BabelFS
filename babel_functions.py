@@ -112,7 +112,7 @@ def main():
     while True:
         input_str = asker.readline()
         if len(input_str) != 0:
-            print("input_str is: " + input_str)
+            print("input_str is: " + repr(input_str))
             # This is the signal from the C code that it is time to stop
             if input_str == "?":
                 break
@@ -126,6 +126,8 @@ def main():
                 if len(input_str) == 1:
                     final_str = ""
                 else:
+                    print("In e else block.")
+                    print("Length of string is: " + str(len(input_str)))
                     get_page_str = getPage(input_str[1:])
                     print("getpage str is: " + get_page_str)
                     get_page_str = get_page_str.rstrip()
