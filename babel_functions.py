@@ -135,7 +135,7 @@ def main():
             print("final str is: " + final_str)
             # pad the length of the string to be 2 * block_length
             current_length = len(final_str)
-            final_str = final_str + (' ' * ((2 * 4096) - current_length - 1))
+            final_str = final_str + (' ' * ((2 * 4096) - current_length))
 
             print("Modified final str is: " + final_str)
             print("Modified length of final str i: " + str(len(final_str)))
