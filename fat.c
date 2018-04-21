@@ -106,6 +106,9 @@ void* fat_init(struct fuse_conn_info *conn)
 	union superblock local_superblock;
 	size_t i;
 
+	// Start the python program
+	system("python babel_functions.py &");
+
 	printf("2\n");
 	// Handles calls to the babel API
 	strcpy(ask_command, "mkfifo ask");
@@ -120,8 +123,6 @@ void* fat_init(struct fuse_conn_info *conn)
 	// Ensure that each request is properly flushed to asker
 	setlinebuf(asker);
 	printf("4\n");
-	// Start the python program
-	system("python babel_functions.py &");
 	printf("5\n");
 	max_metadata = block_size / metadata_size;
 
