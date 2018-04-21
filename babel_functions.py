@@ -105,21 +105,28 @@ def test():
     print ('Tests completed')
 
 def main():
+    print("PYTHON")
     asker = open("ask", "rb")
     answer = open("ans", "wb")
+    print("Pipes opened")
     while True:
         input_str = asker.readline()
-        if len(input_str) != 0:
+        if len("input_str is: " + input_str) != 0:
+            print(input_str)
             # This is the signal from the C code that it is time to stop
             if input_str == "?":
                 break
             input_str = input_str.rstrip('\n')
+            print("after rstrip, input_str is: " + input_str)
             if input_str[0] == 'u':
                 search_str = search(input_str[1:])
+                print("search str is: " + search_str)
                 final_str = search_str + '\n'
             elif input_str[0] == 'e':
                 get_page_str = getPage(input_str[1:])
+                print("getpage str is: " + get_page_str)
                 final_str = get_page_str + '\n'
+            print("final str is: " + final_str)
             answer.write(final_str)
             answer.flush()
 

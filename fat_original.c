@@ -917,7 +917,7 @@ static int fat_write(const char *path, const char *buf, size_t size,
 	// Read the seed that was already in the disk
 	fseek(disk, block_size * current_block, SEEK_SET);
 	fread(seed_read + 1, block_size, 1, disk);
-	printf("read seed from disk: %s\n", seed_read);
+	printf("read seed from disk: %s\n", seed_read + 1);
 
 	// Send encoded seed request
 	fwrite(seed_read, 1, block_size + 1, asker);
