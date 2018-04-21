@@ -800,6 +800,7 @@ int find_offset(const char *path, size_t starting_block)
 static int fat_read(const char *path, char *buf, size_t size, off_t offset,
 		    struct fuse_file_info *fi)
 {
+	printf('in read\n');
 	size_t current_block;
 	size_t offset_in_block;
 	size_t bytes_read;
@@ -869,6 +870,7 @@ static int fat_readlink(const char *path, char *buf, size_t size)
 static int fat_write(const char *path, const char *buf, size_t size,
 		     off_t offset, struct fuse_file_info *fi)
 {
+	printf('in write\n');
 	size_t current_block;
 	size_t offset_in_block;
 	size_t bytes_read;
