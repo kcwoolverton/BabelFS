@@ -921,6 +921,7 @@ static int fat_write(const char *path, const char *buf, size_t size,
 
 	// Send encoded seed request
 	fwrite(seed_read, 1, block_size + 1, asker);
+	fflush(asker);
 	printf("write finished\n");
 
 	// Get answer from python program for the unencoded message
@@ -941,6 +942,7 @@ static int fat_write(const char *path, const char *buf, size_t size,
 
 	// Send ask for seed
 	fwrite(unencoded_read, 1, 2 * block_size + 1, asker);
+	fflush(asker);
 	printf("Write finished\n");
 
 	// Get answer from python program

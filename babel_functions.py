@@ -110,7 +110,6 @@ def main():
     answer = open("ans", "wb")
     print("Pipes opened")
     while True:
-        print("Hi, I'm true")
         input_str = asker.readline()
         if len(input_str) != 0:
             print("input_str is: " + input_str)
