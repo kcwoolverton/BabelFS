@@ -99,8 +99,23 @@ void* fat_init(struct fuse_conn_info *conn)
 	metadata root_metadata;
 	union superblock local_superblock;
 	size_t i;
-	system("python babel_functions_2.py &");
 	max_metadata = block_size / metadata_size;
+
+	// Start the python program
+	system("python babel_functions.py &");
+
+	// Handles calls to the babel API
+	strcpy(ask_command, "mkfifo ask");
+	strcpy(ans_command, "mkfifo ans");
+	system(ask_command);
+	system(ans_command);
+
+	// open the pipes for reading and writing
+	asker = fopen("./ask", "w");
+	answer = fopen("./ans", "r");
+
+	// Ensure that each request is properly flushed to asker
+	setlinebuf(asker);
 
 	/*Create the entire path name*/
 	full_path = (char *) malloc(path_len);
@@ -162,6 +177,11 @@ void fat_destroy(void* private_data)
 	fseek(disk, sizeof(superblock), SEEK_SET);
 	fwrite(FAT, sizeof(size_t), num_blocks, disk);
 
+	// send shut down signal to python
+	fwrite("?", 1, 1, asker);
+
+	fclose(answer);
+	fclose(asker);
 	fclose(disk);
 	free(full_path);
 	free(current_path);

@@ -110,6 +110,9 @@ def main():
     while True:
         input_str = asker.readline()
         if len(input_str) != 0:
+            # This is the signal from the C code that it is time to stop
+            if input_str == "?":
+                break
             input_str = input_str.rstrip('\n')
             if input_str[0] == 'u':
                 search_str = search(input_str[1:])
