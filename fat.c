@@ -236,7 +236,7 @@ void find_metadata(const char *path, metadata* file_metadata) {
 
 		block_num = file_metadata->first_block;
 		token = strtok(NULL, "/");
-		printf("token is: %s", token);
+		printf("token is: %s\n", token);
 	}
 
 	free(path_copy);
@@ -837,8 +837,8 @@ static int fat_read(const char *path, char *buf, size_t size, off_t offset,
 	offset_in_block = offset % block_size;
 	starting_block = offset/block_size;
 
-	printf("starting block: %d", starting_block);
-	printf("path is: %s", path);
+	printf("starting block: %d\n", starting_block);
+	printf("path is: %s\n", path);
 	current_block = find_offset(path, starting_block);
 
 	if (current_block < 1) {
