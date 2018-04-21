@@ -1,6 +1,9 @@
 import string
 import random
 import sys
+# magic to fix broken pipe
+from signal import signal, SIGPIPE, SIG_DFL
+signal(SIGPIPE, SIG_DFL)
 
 length_of_page = 3239
 loc_mult = pow(30, length_of_page)
