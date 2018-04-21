@@ -913,15 +913,19 @@ static int fat_write(const char *path, const char *buf, size_t size,
 
 	current_block = find_offset(path, starting_block);
 
+	printf("1\n");
 	// Read the seed that was already in the disk
 	fseek(disk, block_size * current_block, SEEK_SET);
 	fread(seed_read + 1, block_size, 1, disk);
+	printf("read seed from disk: %s\n", seed_read);
 
-	// Send nencode read seed request
+	// Send encoded seed request
 	fwrite(seed_read, 1, block_size + 1, asker);
+	printf("write finished\n");
 
 	// Get answer from python program for the unencoded message
 	fread(unencoded_read + 1, 1, 2 * block_size, answer);
+	printf("unencoded_read after read is: %s\n", unencoded_read);
 
 	bytes_read = size;
 
@@ -931,17 +935,22 @@ static int fat_write(const char *path, const char *buf, size_t size,
 
 	// Do the write
 	memcpy(unencoded_read + offset_in_block, buf, bytes_read);
+	printf("after memcpy, buf is: %s\n", buf);
 
 	printf("Current block is %u in write.\n", current_block);
 
 	// Send ask for seed
 	fwrite(unencoded_read, 1, 2 * block_size + 1, asker);
+	printf("Write finished\n");
 
 	// Get answer from python program
 	fread(seed_read, 1, block_size + 1, answer);
+	printf("Answer from python was: %s\n", seed_read);
 
 	fseek(disk, block_size * current_block, SEEK_SET);
 	fwrite(seed_read, block_size, 1, disk);
+
+	printf("wrote to disk\n");
 
 	printf("Bytes read is %u", bytes_read);
 
