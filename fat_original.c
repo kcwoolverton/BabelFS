@@ -99,7 +99,7 @@ void* fat_init(struct fuse_conn_info *conn)
 	metadata root_metadata;
 	union superblock local_superblock;
 	size_t i;
-	system("python babel_functions_2.py &")
+	system("python babel_functions_2.py &");
 	max_metadata = block_size / metadata_size;
 
 	/*Create the entire path name*/
