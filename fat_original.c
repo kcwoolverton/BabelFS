@@ -106,18 +106,18 @@ void* fat_init(struct fuse_conn_info *conn)
 	size_t i;
 	max_metadata = block_size / metadata_size;
 
-	// Start the python program
-	system("python babel_functions.py &");
-
-	// Handles calls to the babel API
+	// Make pipes that handle calls to the babel API
 	strcpy(ask_command, "mkfifo ask");
 	strcpy(ans_command, "mkfifo ans");
 	system(ask_command);
 	system(ans_command);
 
+	// Start the python program
+	system("python babel_functions.py &");
+
 	// open the pipes for reading and writing
-	asker = fopen("./ask", "w");
-	answer = fopen("./ans", "r");
+	asker = fopen("ask", "w");
+	answer = fopen("ans", "r");
 
 	// Ensure that each request is properly flushed to asker
 	setlinebuf(asker);
