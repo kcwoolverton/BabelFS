@@ -123,9 +123,13 @@ def main():
                 print("search str is: " + search_str)
                 final_str = search_str + '\n'
             elif input_str[0] == 'e':
-                get_page_str = getPage(input_str[1:])
-                print("getpage str is: " + get_page_str)
-                final_str = get_page_str + '\n'
+                if len(input_str) == 1:
+                    final_str = ""
+                else:
+                    get_page_str = getPage(input_str[1:])
+                    print("getpage str is: " + get_page_str)
+                    get_page_str = get_page_str.rstrip()
+                    final_str = get_page_str + '\n'
             print("final str is: " + final_str)
             answer.write(final_str)
             answer.flush()
