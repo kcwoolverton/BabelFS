@@ -42,14 +42,14 @@ def text_prep(text):
         elif letter == '\n':
             prepared += ' '
     return prepared
-    
-    
+
+
 
 def arg_check(input_array):
-    coms = {'--checkout': [0, None], 
+    coms = {'--checkout': [0, None],
             '--search': [0, None],
-             '--test': [0, None], 
-             '--fsearch': [0, None], 
+             '--test': [0, None],
+             '--fsearch': [0, None],
              '--fcheckout': [0, None],
              '--file': [0, None]}
     try:
@@ -84,14 +84,14 @@ def arg_check(input_array):
         sys.exit()
     return coms
 
-    
+
 def filed(input_dict, text):
     if input_dict['--file'][0]:
         with open(input_dict['--file'][1], 'w') as file:
             file.writelines(text)
         print('\nFile '+ input_dict['--file'][1] + ' was writen')
-        
-        
+
+
 
 def test():
     assert stringToNumber('a') == 0, stringToNumber('a')
@@ -105,45 +105,20 @@ def test():
     print ('Tests completed')
 
 
-def main(input_dict):
-    if input_dict['--checkout'][0]:
-        key_str = input_dict['--checkout'][1]
-        text  ='\nTitle: '+getTitle(key_str) + '\n'+getPage(key_str)+'\n'
-        print(text)
-        filed(input_dict, text)
-    elif input_dict['--search'][0]:
-        search_str = text_prep(input_dict['--search'][1])
-        key_str = search(text_prep(search_str))
-        text1 = '\nPage which includes this text:\n' + getPage(key_str)+'\n\n@ address '+key_str+'\n'
-        only_key_str = search(search_str.ljust(length_of_page))
-        text2 = '\nPage which contains only this text:\n'+ getPage(only_key_str)+'\n\n@ address '+only_key_str+'\n'
-        text3 = '\nTitle which contains this text:\n@ address '+ searchTitle(search_str)
-        text = text1 + text2 + text3
-        print(text)
-        filed(input_dict, text)
-    elif input_dict['--test'][0]:
-        test()
-    elif input_dict['--fsearch'][0]:
-        file = input_dict['--fsearch'][1]
-        with open(file, 'r') as f:
-            lines = ''.join([line for line in f.readlines() if line is not'\n'])
-        search_str = text_prep(lines)
-        key_str = search(search_str)
-        text1 = '\nPage which includes this text:\n'+ getPage(key_str) +'\n\n@ address '+ key_str +'\n'
-        only_key_str = search(search_str.ljust(length_of_page))
-        text2 = '\nPage which contains only this text:\n' + getPage(only_key_str) + '\n\n@ address '+ only_key_str +'\n'
-        text3 = '\nTitle which contains this text:\n@ address ' + searchTitle(search_str) +'\n'
-        text = text1 + text2 + text3
-        print(text)
-        filed(input_dict, text)
-    elif input_dict['--fcheckout'][0]:
-        file = input_dict['--fcheckout'][1]
-        with open(file, 'r') as f:
-            key_str = ''.join([line for line in f.readlines() if line is not'\n'])[:-1]
-        text  ='\nTitle: '+getTitle(key_str) + '\n'+getPage(key_str)+'\n'
-        print(text)
-        filed(input_dict, text)
-        
+def main():
+    asker = open(ask, 'rb')
+    answer = open(ans, 'wb')
+    while True:
+        input_str = asker.read()
+        if len(input_str) != 0:
+            if input_str[0] == 'u':
+                answer.write(search(input_str[1:]))
+                answer.flush()
+            elif input_str[0] == 'e':
+                answer.write(getPage(input_str[1:]))
+                answer.flush()
+
+
 def search(search_str):
     wall = str(int(random.random()*4))
     shelf = str(int(random.random()*5))

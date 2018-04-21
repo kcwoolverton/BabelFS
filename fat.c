@@ -98,22 +98,23 @@ size_t allocate_new_block() {
 
 void* fat_init(struct fuse_conn_info *conn)
 {
+	printf("1\n");
 	size_t path_len = strlen(disk_name) + strlen(current_path) + 2;
 	metadata root_metadata;
 	union superblock local_superblock;
 	size_t i;
 
-
+	printf("2\n");
 	// Handles calls to the babel API
-	asker = fopen("/ask", "w");
-	answer = fopen("/ans", "r");
-
+	asker = fopen("ask", "w");
+	answer = fopen("ans", "r");
+	printf("3\n");
 	// Ensure that each request is properly flushed to asker
 	setlinebuf(asker);
-
+	printf("4\n");
 	// Start the python program
 	system("python babel_functions.py &");
-
+	printf("5\n");
 	max_metadata = block_size / metadata_size;
 
 	/*Create the entire path name*/
@@ -121,7 +122,7 @@ void* fat_init(struct fuse_conn_info *conn)
 	strcpy(full_path, current_path);
 	strcat(full_path, "/");
 	strcat(full_path, disk_name);
-
+	printf("6\n");
 	/* Create the FAT in memory*/
 	FAT = (size_t*) malloc(sizeof(size_t) * num_blocks);
 
@@ -467,11 +468,8 @@ int write_metadata_to_block(size_t block_num, metadata *file_metadata) {
 		fread(current_data, sizeof(metadata), max_metadata, disk);
 		for (i = 0; i < max_metadata; i++) {
 			if (current_data[i].file_check == 0) {
-				printf("In if statement of write metadata.\n");
 				ret++;
 				current_data[i] = *file_metadata;
-				printf("File_metadata name %s\n", current_data[i].name);
-				printf("Flag for metadata %u\n", current_data[i].file_check);
 				fseek(disk, current_block * block_size, SEEK_SET);
 				fwrite(current_data, sizeof(metadata), max_metadata, disk);
 				free(current_data);
@@ -512,7 +510,6 @@ static int fat_mknod(const char *path, mode_t mode, dev_t rdev)
 	parent_path = malloc(path_len);
 	check = find_parent_dir(path, parent_path, name);
 
-	printf("The parent path is %s, name is %s.\n", parent_path, name);
 	if (check == -1) {
 		return -ENAMETOOLONG;
 	}
@@ -529,7 +526,6 @@ static int fat_mknod(const char *path, mode_t mode, dev_t rdev)
 
 	find_metadata(parent_path, &parent_metadata);
 
-	printf("Before parent_metadata.first_block\n");
 	check = write_metadata_to_block(parent_metadata.first_block, &new_metadata);
 
 	if (check == -1) {
@@ -675,8 +671,6 @@ static int fat_truncate(const char *path, off_t size)
 	size_t i;
 	size_t j;
 
-	printf("Inside Truncate\n");
-
 	/* find name of dir and path to dir */
 	parent_path = (char*) malloc(path_size);
 	check = find_parent_dir(path, parent_path, name);
@@ -690,8 +684,6 @@ static int fat_truncate(const char *path, off_t size)
 	if (parent_dir.file_check == 0) {
 		return -ENOENT;
 	}
-
-	printf("Found metadata and got past beginning\n");
 
 	current_data = (metadata*) malloc(sizeof(metadata) * max_metadata);
 	current_block = parent_dir.first_block;
@@ -707,7 +699,6 @@ static int fat_truncate(const char *path, off_t size)
 				/* update metadata and write it back to disk */
 				current_data[i].size = size;
 				num_blocks_needed = size/block_size;
-				printf("Current block is %u in truncate.\n", current_block);
 				fseek(disk, current_block * block_size, SEEK_SET);
 				fwrite(current_data, sizeof(metadata), max_metadata, disk);
 
@@ -736,14 +727,12 @@ static int fat_truncate(const char *path, off_t size)
 					}
 				}
 				free(current_data);
-				printf("Well this return shouldn't be a problem\n");
 				return 0;
 			}
 		}
 
 		if (FAT[current_block] == 0) {
 			free(current_data);
-			printf("ENOENT everyone\n");
 			return -ENOENT;
 		} else {
 			current_block = FAT[current_block];
@@ -777,8 +766,6 @@ int find_offset(const char *path, size_t starting_block)
 	size_t i;
 	metadata file_metadata;
 
-	printf("starting_block is %u in find_offset.\n", starting_block);
-
 	find_metadata(path, &file_metadata);
 
 	if (file_metadata.file_check == 0) {
@@ -798,8 +785,6 @@ int find_offset(const char *path, size_t starting_block)
 		current_block = FAT[current_block];
 	}
 
-	printf("current_block is %u.\n", current_block);
-
 	return current_block;
 }
 
@@ -810,7 +795,11 @@ static int fat_read(const char *path, char *buf, size_t size, off_t offset,
 	size_t offset_in_block;
 	size_t bytes_read;
 	size_t starting_block;
-	char block_read[block_size];
+	char encoded_read[block_size + 1];
+	char unencoded_read[2 * block_size];
+
+	// Ensure that the python program knows it is unencoding a file
+	encoded_read[0] = 'e';
 
 	offset_in_block = offset % block_size;
 	starting_block = offset/block_size;
@@ -821,8 +810,9 @@ static int fat_read(const char *path, char *buf, size_t size, off_t offset,
 		return current_block;
 	}
 
+	// Get data from disk
 	fseek(disk, block_size * current_block, SEEK_SET);
-	fread(block_read, block_size, 1, disk);
+	fread(encoded_read, block_size, 1, disk);
 
 	bytes_read = size;
 
@@ -830,7 +820,13 @@ static int fat_read(const char *path, char *buf, size_t size, off_t offset,
 		bytes_read = (block_size - offset);
 	}
 
-	memcpy(buf, block_read + offset_in_block, bytes_read);
+	// ask python to decode the seed
+	fwrite(encoded_read, 1, block_size + 1, asker);
+
+	// get the unencoded file
+	fread(unencoded_read, 1, 2 * block_size, answer);
+
+	memcpy(buf, unencoded_read + offset_in_block, bytes_read);
 
 	return bytes_read;
 }
@@ -876,8 +872,8 @@ static int fat_write(const char *path, const char *buf, size_t size,
 	// These characters at the beginning are needed to determine whether
 	// we want to encode it into a seed or unencode it into text. The
 	// python script will remove them.
-	seed_read[0] = 'a';
-	unencoded_read[0] = 'b';
+	seed_read[0] = 'e';
+	unencoded_read[0] = 'u';
 
 	find_metadata(path, &file_metadata);
 
@@ -902,11 +898,9 @@ static int fat_write(const char *path, const char *buf, size_t size,
 	fread(seed_read + 1, block_size, 1, disk);
 
 	// Send nencode read seed request
-	fseek(asker, 0, SEEK_SET);
 	fwrite(seed_read, 1, block_size + 1, asker);
 
 	// Get answer from python program for the unencoded message
-	fseek(answer, 0, SEEK_SET);
 	fread(unencoded_read + 1, 1, 2 * block_size, answer);
 
 	bytes_read = size;
@@ -919,11 +913,9 @@ static int fat_write(const char *path, const char *buf, size_t size,
 	memcpy(unencoded_read + 1 + offset_in_block, buf, bytes_read);
 
 	// Send ask for seed
-	fseek(asker, 0, SEEK_SET);
 	fwrite(unencoded_read, 1, 2 * block_size + 1, asker);
 
 	// Get answer from python program
-	fseek(answer, 0, SEEK_SET);
 	fread(seed_read, 1, block_size + 1, answer);
 
 	// Write the updated information to disk
