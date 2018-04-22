@@ -181,6 +181,7 @@ void* fat_init(struct fuse_conn_info *conn)
 
 void fat_destroy(void* private_data)
 {
+	int write_check;
 	union superblock u_superblock;
 	u_superblock.l_superblock = fs_superblock;
 	fseek(disk, 0, SEEK_SET);
@@ -191,8 +192,16 @@ void fat_destroy(void* private_data)
 
 	// send shut down signal to python
 	asker = open("ask", O_WRONLY);
-	write(asker, "?", 1);
-	close(asker)
+	if (asker == -1) {
+		fprintf(stderr, "Error opening asker in fat_destroy.\n");
+	}
+	write_check = write(asker, "?", 1);
+	if (write_check != 1) {
+		fprintf(stderr, "Error writing to asker in fat_destroy.\n");
+	}
+	if (close(asker) == -1) {
+		fprintf(stderr, "Error closing asker in fat_close.\n");
+	}
 
 	fclose(disk);
 	free(full_path);
