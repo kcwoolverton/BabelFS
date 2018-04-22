@@ -190,10 +190,10 @@ void fat_destroy(void* private_data)
 	fwrite(FAT, sizeof(size_t), num_blocks, disk);
 
 	// send shut down signal to python
-	fwrite("?", 1, 1, asker);
+	asker = open("ask", O_WRONLY);
+	write(asker, "?", 1);
+	close(asker)
 
-	fclose(answer);
-	fclose(asker);
 	fclose(disk);
 	free(full_path);
 	free(current_path);
