@@ -111,23 +111,25 @@ void* fat_init(struct fuse_conn_info *conn)
 	if (answer == -1) {
 		fprintf(stderr, "Error creating answer file.\n");
 	}
-
+	printf("1\n");
 	if (close(answer) == -1) {
 		fprintf(stderr, "Error closing answer file in init.\n");
 	}
-
+	printf("2\n");
 	asker = open("ask", O_CREAT, 00777);
 	if (asker == -1) {
 		fprintf(stderr, "Error creating asker file.\n");
 	}
-
+	printf("3\n");
 	if (close(asker) == -1) {
 		fprintf(stderr, "Error closing asker file in init.\n");
 	}
-
+	printf("4\n");
 
 	// Start the python program
-	system("python babel_functions.py &");
+	if (system("python babel_functions.py &") == -1) {
+		fprintf(stderr, "System call to python failed.\n");
+	}
 
 	/*Create the entire path name*/
 	full_path = (char *) malloc(path_len);
@@ -176,6 +178,7 @@ void* fat_init(struct fuse_conn_info *conn)
 		fread(FAT, sizeof(size_t), num_blocks, disk);
 	}
 
+	printf("finished init.\n");
 	return NULL;
 }
 
