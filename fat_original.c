@@ -875,7 +875,7 @@ void freadOne(FILE* stream, size_t iterations) {
 	int i;
 	char c;
 	for (i = 0; i < iterations; i++) {
-		fread(c, 1, 1, stream)
+		fread(&c, 1, 1, stream);
 		printf("The char is: %c\n", c);
 	}
 }
