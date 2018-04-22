@@ -109,10 +109,9 @@ def test():
 def main():
     print("PYTHON")
     while True:
-        # TODO: Pseudocode
-        asker = os.open("ask", os.O_RDONLY)
-        input_str = os.read(asker, 2 * 4096)
-        os.close(asker)
+        with open("ask", "r+b") as asker:
+            input_str = asker.read()
+            asker.truncate(0)
         if len(input_str) != 0:
             print("input_str is: " + repr(input_str))
             # This is the signal from the C code that it is time to stop
@@ -142,9 +141,8 @@ def main():
             input_str = ""
             print("Modified final str is: " + final_str)
             print("Modified length of final str i: " + str(len(final_str)))
-            answer = os.open("ans", os.O_WRONLY)
-            os.write(answer, final_str)
-            os.close(answer)
+            with open("ans", "wb") as answer:
+                answer.write(final_str)
 
 def search(search_str):
     wall = str(int(random.random()*4))
