@@ -108,7 +108,7 @@ void* fat_init(struct fuse_conn_info *conn)
 
 	// Create the files that will be used to communicate between c and python
 	printf("0\n");
-	answer = open("ans", O_CREAT, 00777);
+	answer = open("ans", O_RDWR | O_CREAT, 00777);
 	if (answer == -1) {
 		fprintf(stderr, "Error creating answer file.\n");
 	}
@@ -117,7 +117,7 @@ void* fat_init(struct fuse_conn_info *conn)
 		fprintf(stderr, "Error closing answer file in init.\n");
 	}
 	printf("2\n");
-	asker = open("ask", O_CREAT, 00777);
+	asker = open("ask", O_RDWR | O_CREAT, 00777);
 	if (asker == -1) {
 		fprintf(stderr, "Error creating asker file.\n");
 	}
