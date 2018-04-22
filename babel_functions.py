@@ -1,6 +1,8 @@
 import string
 import random
 import sys
+import os
+
 
 length_of_page = 3239
 loc_mult = pow(30, length_of_page)
@@ -106,11 +108,11 @@ def test():
 
 def main():
     print("PYTHON")
-    asker = open("ask", "rb")
-    answer = open("ans", "wb")
-    print("Pipes opened")
     while True:
-        input_str = asker.readline()
+        # TODO: Pseudocode
+        asker = os.open("ask")
+        input_str = read(asker, 2 * 4096)
+        os.close(asker)
         if len(input_str) != 0:
             print("input_str is: " + repr(input_str))
             # This is the signal from the C code that it is time to stop
@@ -139,8 +141,9 @@ def main():
 
             print("Modified final str is: " + final_str)
             print("Modified length of final str i: " + str(len(final_str)))
-            answer.write(final_str)
-            answer.flush()
+            answer = os.open("ans")
+            write(answer, final_str)
+            os.close(answer)
 
 def search(search_str):
     wall = str(int(random.random()*4))
