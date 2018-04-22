@@ -45,8 +45,8 @@ static char *full_path;
 static FILE *disk;
 static size_t *FAT;
 
-static FILE *asker;
-static FILE *answer;
+int asker;
+int answer;
 
 typedef struct {
 	unsigned long size;
@@ -106,18 +106,28 @@ void* fat_init(struct fuse_conn_info *conn)
 	size_t i;
 	max_metadata = block_size / metadata_size;
 
-	// Make pipes that handle calls to the babel API
-	strcpy(ask_command, "mkfifo ask");
-	strcpy(ans_command, "mkfifo ans");
-	system(ask_command);
-	system(ans_command);
+	// Create the files that will be used to communicate between c and python
+	answer = open("ans", O_CREAT, 00777);
+	if (answer == -1) {
+		fprintf(stderr, "Error creating answer file.\n");
+	}
+
+	if (close(answer) == -1) {
+		fprintf(stderr, "Error closing answer file in init.\n");
+	}
+
+	asker = open("ask", O_CREAT, 00777);
+	if (asker == -1) {
+		fprintf(stderr, "Error creating asker file.\n");
+	}
+
+	if (close(asker) == -1) {
+		fprintf(stderr, "Error closing asker file in init.\n");
+	}
+
 
 	// Start the python program
 	system("python babel_functions.py &");
-
-	// open the pipes for reading and writing
-	asker = fopen("ask", "w");
-	answer = fopen("ans", "r");
 
 	// Ensure that each request is properly flushed to asker
 	setlinebuf(asker);
@@ -882,6 +892,8 @@ static int fat_write(const char *path, const char *buf, size_t size,
 	metadata file_metadata;
 	char seed_read[block_size + 1];
 	char unencoded_read[2 * block_size + 1];
+	int write_int;
+	int read_int;
 	int check = 0;
 
 	printf("Inside write function.\n");
@@ -919,13 +931,35 @@ static int fat_write(const char *path, const char *buf, size_t size,
 	fread(seed_read + 1, block_size, 1, disk);
 	printf("read seed from disk: %s\n", seed_read + 1);
 
+	// TODO This is literally pseudocode
 	// Send encoded seed request
-	fwrite(seed_read, 1, block_size + 1, asker);
-	fflush(asker);
+	asker = open("ask", O_WRONLY);
+	if (asker == -1) {
+		fprintf(stderr, "Error opening asker in fat_write.\n");
+	}
+	write_int = write(asker, seed_read, block_size + 1);
+	if (write_int < 0) {
+		fprintf(stderr, "Error writing to asker in fat_write.\n");
+	}
+	printf("write_int is: %d\n", write_int);
+	if (close(asker) == -1) {
+		printf("Error closing asker in fat_write.\n");
+	}
 	printf("write finished\n");
 
 	// Get answer from python program for the unencoded message
-	fread(unencoded_read + 1, 2 * block_size, 1, answer);
+	answer = open("ans", O_RDONLY);
+	if (answer == -1) {
+		fprintf(stderr, "Error opening answer in fat_write.\n");
+	}
+	read_int = read(answer, unencoded_read + 1, 2 * block_size);
+	printf("Read %d bytes.\n", read_int);
+	if (read_int < 0) {
+		fprintf(stderr, "Error reading from answer.\n");
+	}
+	if (close(answer) == -1) {
+		fprintf(stderr, "Error closing answer in fat_write.\n");
+	}
 	printf("unencoded_read after fread is: %s\n", unencoded_read);
 
 	bytes_read = size;
@@ -941,12 +975,33 @@ static int fat_write(const char *path, const char *buf, size_t size,
 	printf("Current block is %u in write.\n", current_block);
 
 	// Send ask for seed
-	fwrite(unencoded_read, 1, 2 * block_size + 1, asker);
-	fflush(asker);
+	asker = open("ask", O_WRONLY);
+	if (asker == -1) {
+		fprintf(stderr, "Error opening asker for the second time in fat_write.\n");
+	}
+	write_int = write(unencoded_read, 1, 2 * block_size + 1, asker);
+	if (write_int < 0 ) {
+		fprintf(stderr, "Errror writing to asker in fat_write.\n");
+	}
+	printf("write_int is: %d\n", write_int);
+	if (close(asker) == -1) {
+		fprintf(stderr, "Error closing asker for the second time in fat_write.\n");
+	}
 	printf("Write finished\n");
 
 	// Get answer from python program
-	fread(seed_read, 1, block_size + 1, answer);
+	answer = open("ans", O_RDONLY);
+	if (answer == -1) {
+		fprintf(stderr, "Error opening ans for the second time in fat_write.\n");
+	}
+	read_int = read(answer, seed_read, block_size + 1);
+	if (read_int < 0) {
+		fprintf(stderr, "Error reading from answer in fat_write.\n");
+	}
+	printf("Read %d bytes.\n", read_int);
+	if (close(answer) == -1) {
+		fprintf(stderr, "Error closing answer in fat_write.\n");
+	}
 	printf("Answer from python was: %s\n", seed_read);
 
 	fseek(disk, block_size * current_block, SEEK_SET);
