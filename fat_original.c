@@ -871,6 +871,14 @@ static int fat_readlink(const char *path, char *buf, size_t size)
 	return 0;
 }
 
+void freadOne(FILE* stream, size_t iterations) {
+	int i;
+	char c;
+	for (i = 0; i < iterations; i++) {
+		fread(c, 1, 1, stream)
+		printf("The char is: %c\n", c);
+	}
+}
 
 static int fat_write(const char *path, const char *buf, size_t size,
 		     off_t offset, struct fuse_file_info *fi)
@@ -925,7 +933,8 @@ static int fat_write(const char *path, const char *buf, size_t size,
 	printf("write finished\n");
 
 	// Get answer from python program for the unencoded message
-	fread(unencoded_read + 1, 2 * block_size, 1, answer);
+	freadOne(answer, 8192);
+	//fread(unencoded_read + 1, 2 * block_size, 1, answer);
 	printf("unencoded_read after fread is: %s\n", unencoded_read);
 
 	bytes_read = size;
