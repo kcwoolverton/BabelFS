@@ -107,6 +107,7 @@ void* fat_init(struct fuse_conn_info *conn)
 	max_metadata = block_size / metadata_size;
 
 	// Create the files that will be used to communicate between c and python
+	printf("0\n");
 	answer = open("ans", O_CREAT, 00777);
 	if (answer == -1) {
 		fprintf(stderr, "Error creating answer file.\n");
