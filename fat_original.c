@@ -129,9 +129,6 @@ void* fat_init(struct fuse_conn_info *conn)
 	// Start the python program
 	system("python babel_functions.py &");
 
-	// Ensure that each request is properly flushed to asker
-	setlinebuf(asker);
-
 	/*Create the entire path name*/
 	full_path = (char *) malloc(path_len);
 	strcpy(full_path, current_path);
@@ -979,7 +976,7 @@ static int fat_write(const char *path, const char *buf, size_t size,
 	if (asker == -1) {
 		fprintf(stderr, "Error opening asker for the second time in fat_write.\n");
 	}
-	write_int = write(unencoded_read, 1, 2 * block_size + 1, asker);
+	write_int = write(asker, unencoded_read, 2 * block_size + 1);
 	if (write_int < 0 ) {
 		fprintf(stderr, "Errror writing to asker in fat_write.\n");
 	}
