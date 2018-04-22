@@ -110,7 +110,7 @@ def main():
     print("PYTHON")
     while True:
         # TODO: Pseudocode
-        asker = os.open("ask")
+        asker = os.open("ask", O_RDONLY)
         input_str = read(asker, 2 * 4096)
         os.close(asker)
         if len(input_str) != 0:
@@ -141,7 +141,7 @@ def main():
 
             print("Modified final str is: " + final_str)
             print("Modified length of final str i: " + str(len(final_str)))
-            answer = os.open("ans")
+            answer = os.open("ans", O_WRONLY)
             write(answer, final_str)
             os.close(answer)
 
