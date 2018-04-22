@@ -113,7 +113,6 @@ def main():
             input_str = asker.read()
             asker.truncate(0)
         if len(input_str) != 0:
-            print("input_str is: " + repr(input_str))
             # This is the signal from the C code that it is time to stop
             if input_str == "?":
                 break
@@ -134,13 +133,9 @@ def main():
                     get_page_str = get_page_str.rstrip()
                     final_str = get_page_str + '\n'
             print("final str is: " + final_str)
-            # pad the length of the string to be 2 * block_length
-            current_length = len(final_str)
-            final_str = final_str + (' ' * ((2 * 4096) - current_length))
             # Clear input string so that we don't end up in this if for the rest of our lives
             input_str = ""
-            print("Modified final str is: " + final_str)
-            print("Modified length of final str i: " + str(len(final_str)))
+            print("Length of final str i: " + str(len(final_str)))
             with open("ans", "wb") as answer:
                 answer.write(final_str)
 
