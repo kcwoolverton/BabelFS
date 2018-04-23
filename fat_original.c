@@ -901,7 +901,7 @@ static int fat_write(const char *path, const char *buf, size_t size,
 	size_t bytes_read;
 	size_t starting_block;
 	metadata file_metadata;
-	const struct timespec sleep_time;
+	const struct timespec sleep_time = { .tv_sec = 0, .tv_nsex = 1000};
 	struct timespec sleep_aid;
 	char seed_read[block_size + 1];
 	char unencoded_read[2 * block_size + 1];
@@ -910,9 +910,6 @@ static int fat_write(const char *path, const char *buf, size_t size,
 	int check = 0;
 
 	printf("Inside write function.\n");
-
-	sleep_time.tv_sec = 0;
-	sleep_time.tv_nsec = 1000;
 
 	memset(seed_read, '\0', (block_size + 1) * sizeof(char));
 	memset(unencoded_read, '\0', (2 * block_size + 1) * sizeof(char));
