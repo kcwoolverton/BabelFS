@@ -901,8 +901,6 @@ static int fat_write(const char *path, const char *buf, size_t size,
 	size_t bytes_read;
 	size_t starting_block;
 	metadata file_metadata;
-	const struct timespec sleep_time = { .tv_sec = 0, .tv_nsec = 1000};
-	struct timespec sleep_aid;
 	char seed_read[block_size + 1];
 	char unencoded_read[2 * block_size + 1];
 	int write_int;
@@ -1030,7 +1028,7 @@ static int fat_write(const char *path, const char *buf, size_t size,
 		if (read_int > 0) {
 			break;
 		} else {
-			nanosleep(sleep_time, sleep_aid);
+			sleep(1);
 		}
 	}
 	printf("Answer from python was: %s\n", seed_read);
