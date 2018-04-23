@@ -908,14 +908,14 @@ static int fat_write(const char *path, const char *buf, size_t size,
 
 	printf("Inside write function.\n");
 
+	memset(seed_read, '\0', (block_size + 1) * sizeof(char));
+	memset(unencoded_read, '\0', (2 * block_size + 1) * sizeof(char));
+
 	// These characters at the beginning are needed to determine whether
 	// we want to encode it into a seed or unencode it into text. The
 	// python script will remove them.
 	seed_read[0] = 'e';
 	unencoded_read[0] = 'u';
-
-	memset(seed_read, '\0', (block_size + 1) * sizeof(char));
-	memset(unencoded_read, '\0', (2 * block_size + 1) * sizeof(char));
 
 	find_metadata(path, &file_metadata);
 
