@@ -914,6 +914,9 @@ static int fat_write(const char *path, const char *buf, size_t size,
 	seed_read[0] = 'e';
 	unencoded_read[0] = 'u';
 
+	memset(seed_read, '\0', (block_size + 1) * sizeof(char));
+	memset(unencoded_read, '\0', (2 * block_size + 1) * sizeof(char));
+
 	find_metadata(path, &file_metadata);
 
 	if (file_metadata.file_check == 0) {
@@ -941,7 +944,6 @@ static int fat_write(const char *path, const char *buf, size_t size,
 	fread(seed_read + 1, block_size, 1, disk);
 	printf("read seed from disk: %s\n", seed_read);
 
-	// TODO This is literally pseudocode
 	// Send encoded seed request
 	asker = open("ask", O_WRONLY);
 	if (asker == -1) {
@@ -986,6 +988,9 @@ static int fat_write(const char *path, const char *buf, size_t size,
 	printf("after memcpy, buf is: %s\n", unencoded_read);
 
 	printf("Current block is %u in write.\n", current_block);
+
+	// Reset seed_read.
+	memset(seed_read, '\0', (block_size + 1) * sizeof(char));
 
 	// Send ask for seed
 	asker = open("ask", O_WRONLY);
