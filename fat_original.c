@@ -31,6 +31,7 @@
 #include <dirent.h>
 #include <errno.h>
 #include <sys/time.h>
+#include<time.h>
 #ifdef HAVE_SETXATTR
 #include <sys/xattr.h>
 #endif
@@ -900,6 +901,8 @@ static int fat_write(const char *path, const char *buf, size_t size,
 	size_t bytes_read;
 	size_t starting_block;
 	metadata file_metadata;
+	const struct timspec sleep_time;
+	struct timespec sleep_aid;
 	char seed_read[block_size + 1];
 	char unencoded_read[2 * block_size + 1];
 	int write_int;
@@ -907,6 +910,9 @@ static int fat_write(const char *path, const char *buf, size_t size,
 	int check = 0;
 
 	printf("Inside write function.\n");
+
+	sleep_time.tv_sec = 0;
+	sleep_time.tv_nsec = 1000;
 
 	memset(seed_read, '\0', (block_size + 1) * sizeof(char));
 	memset(unencoded_read, '\0', (2 * block_size + 1) * sizeof(char));
@@ -1009,18 +1015,26 @@ static int fat_write(const char *path, const char *buf, size_t size,
 	}
 	printf("Write finished\n");
 
-	// Get answer from python program
-	answer = open("ans", O_RDONLY);
-	if (answer == -1) {
-		fprintf(stderr, "Error opening ans for the second time in fat_write.\n");
-	}
-	read_int = read(answer, seed_read, block_size + 1);
-	if (read_int < 0) {
-		fprintf(stderr, "Error reading from answer in fat_write.\n");
-	}
-	printf("Read %d bytes.\n", read_int);
-	if (close(answer) == -1) {
-		fprintf(stderr, "Error closing answer in fat_write.\n");
+	while(1) {
+		// Get answer from python program
+		answer = open("ans", O_RDONLY);
+		if (answer == -1) {
+			fprintf(stderr, "Error opening ans for the second time in fat_write.\n");
+		}
+		read_int = read(answer, seed_read, block_size + 1);
+		if (read_int < 0) {
+			fprintf(stderr, "Error reading from answer in fat_write.\n");
+		}
+		printf("Read %d bytes.\n", read_int);
+		if (close(answer) == -1) {
+			fprintf(stderr, "Error closing answer in fat_write.\n");
+		}
+
+		if (read_int > 0) {
+			break;
+		} else {
+			nanosleep(sleep_time, sleep_aid);
+		}
 	}
 	printf("Answer from python was: %s\n", seed_read);
 
