@@ -901,7 +901,7 @@ static int fat_write(const char *path, const char *buf, size_t size,
 	size_t bytes_read;
 	size_t starting_block;
 	metadata file_metadata;
-	const struct timspec sleep_time;
+	const struct timespec sleep_time;
 	struct timespec sleep_aid;
 	char seed_read[block_size + 1];
 	char unencoded_read[2 * block_size + 1];
