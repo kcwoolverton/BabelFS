@@ -982,10 +982,12 @@ static int fat_write(const char *path, const char *buf, size_t size,
 
 	// We need to copy the changes from buf into our unencoded_read.
 
+	printf("offset_in_block is %u", offset_in_block);
+
 	// Do the write
 	memcpy(unencoded_read + offset_in_block + 1, buf, bytes_read);
 	printf("after memcpy, buf is: %s\n", buf);
-	printf("after memcpy, buf is: %s\n", unencoded_read);
+	printf("after memcpy, unencoded_read is: %s\n", unencoded_read);
 
 	printf("Current block is %u in write.\n", current_block);
 
