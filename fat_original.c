@@ -911,6 +911,7 @@ static int fat_read(const char *path, char *buf, size_t size, off_t offset,
 		printf("unencoded_read after fread is: %s\n", unencoded_read);
 
 		if (read_int > 0) {
+			truncate("ans", 0);
 			break;
 		} else {
 			sleep(1);
@@ -1017,7 +1018,7 @@ static int fat_write(const char *path, const char *buf, size_t size,
 
 	// Get answer from python program for the unencoded message
 	while(1) {
-		answer = open("ans", O_RDONLY);
+		answer = open("ans", O_RDWR); // need to be able to get the answer, and clear it afterward
 		if (answer == -1) {
 			fprintf(stderr, "Error opening answer in fat_write.\n");
 		}
@@ -1032,6 +1033,7 @@ static int fat_write(const char *path, const char *buf, size_t size,
 		printf("unencoded_read after fread is: %s\n", unencoded_read);
 
 		if (read_int >= 0) {
+			truncate("ans", 0); // clear the contents
 			break;
 		} else {
 			sleep(1);
@@ -1090,6 +1092,7 @@ static int fat_write(const char *path, const char *buf, size_t size,
 		}
 
 		if (read_int > 0) {
+			truncate("ans", 0); // clear the contents
 			break;
 		} else {
 			sleep(1);
