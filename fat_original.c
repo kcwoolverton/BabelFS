@@ -842,7 +842,20 @@ static int fat_read(const char *path, char *buf, size_t size, off_t offset,
 	size_t offset_in_block;
 	size_t bytes_read;
 	size_t starting_block;
-	char block_read[block_size];
+	char unencoded_read[2 * block_size + 1];
+	char seed_read[block_size + 1];
+
+	printf("Inside read function.\n");
+
+	printf("Clear seed_read and unencoded_read\n.");
+	memset(seed_read, '\0', (block_size + 1) * sizeof(char));
+	memset(unencoded_read, '\0', (2 * block_size + 1) * sizeof(char));
+
+	// These characters at the beginning are needed to determine whether
+	// we want to encode it into a seed or unencode it into text. The
+	// python script will remove them.
+	seed_read[0] = 'e';
+	unencoded_read[0] = 'u';
 
 	offset_in_block = offset % block_size;
 	starting_block = offset/block_size;
@@ -853,8 +866,9 @@ static int fat_read(const char *path, char *buf, size_t size, off_t offset,
 		return current_block;
 	}
 
+	// Get the seed from the disk
 	fseek(disk, block_size * current_block, SEEK_SET);
-	fread(block_read, block_size, 1, disk);
+	fread(seed_read + 1, block_size, 1, disk);
 
 	bytes_read = size;
 
@@ -862,7 +876,46 @@ static int fat_read(const char *path, char *buf, size_t size, off_t offset,
 		bytes_read = (block_size - offset);
 	}
 
-	memcpy(buf, block_read + offset_in_block, bytes_read);
+	// Send encoded seed request
+	asker = open("ask", O_WRONLY);
+	if (asker == -1) {
+		fprintf(stderr, "Error opening asker in fat_read.\n");
+	}
+	write_int = write(asker, seed_read, block_size + 1);
+	if (write_int < 0) {
+		fprintf(stderr, "Error writing to asker in fat_read.\n");
+	}
+	printf("write_int is: %d\n", write_int);
+	if (close(asker) == -1) {
+		printf("Error closing asker in fat_read.\n");
+	}
+	printf("write finished\n");
+
+	// Get answer from python program for the unencoded message
+	while(1) {
+		answer = open("ans", O_RDONLY);
+		if (answer == -1) {
+			fprintf(stderr, "Error opening answer in fat_read.\n");
+		}
+		read_int = read(answer, unencoded_read, 2 * block_size);
+		unencoded_read[2*block_size] = '/0'; // ensure that it is null terminated
+		printf("Read %d bytes.\n", read_int);
+		if (read_int < 0) {
+			fprintf(stderr, "Error reading from answer.\n");
+		}
+		if (close(answer) == -1) {
+			fprintf(stderr, "Error closing answer in fat_read.\n");
+		}
+		printf("unencoded_read after fread is: %s\n", unencoded_read);
+
+		if (read_int > 0) {
+			break;
+		} else {
+			sleep(1);
+		}
+	}
+
+	memcpy(buf, unencoded_read + offset_in_block, read_int);
 
 	return bytes_read;
 }
@@ -898,7 +951,7 @@ static int fat_write(const char *path, const char *buf, size_t size,
 {
 	size_t current_block;
 	size_t offset_in_block;
-	size_t bytes_read;
+	size_t bytes_read; // this is the number of bytes of the written unencoded message
 	size_t starting_block;
 	metadata file_metadata;
 	char seed_read[block_size + 1];
@@ -961,20 +1014,27 @@ static int fat_write(const char *path, const char *buf, size_t size,
 	printf("write finished\n");
 
 	// Get answer from python program for the unencoded message
-	answer = open("ans", O_RDONLY);
-	if (answer == -1) {
-		fprintf(stderr, "Error opening answer in fat_write.\n");
-	}
-	read_int = read(answer, unencoded_read + 1, 2 * block_size);
-	printf("Read %d bytes.\n", read_int);
-	if (read_int < 0) {
-		fprintf(stderr, "Error reading from answer.\n");
-	}
-	if (close(answer) == -1) {
-		fprintf(stderr, "Error closing answer in fat_write.\n");
-	}
-	printf("unencoded_read after fread is: %s\n", unencoded_read);
+	while(1) {
+		answer = open("ans", O_RDONLY);
+		if (answer == -1) {
+			fprintf(stderr, "Error opening answer in fat_write.\n");
+		}
+		read_int = read(answer, unencoded_read + 1, 2 * block_size);
+		printf("Read %d bytes.\n", read_int);
+		if (read_int < 0) {
+			fprintf(stderr, "Error reading from answer.\n");
+		}
+		if (close(answer) == -1) {
+			fprintf(stderr, "Error closing answer in fat_write.\n");
+		}
+		printf("unencoded_read after fread is: %s\n", unencoded_read);
 
+		if (read_int > 0) {
+			break;
+		} else {
+			sleep(1);
+		}
+	}
 
 	bytes_read = size;
 
@@ -1034,6 +1094,7 @@ static int fat_write(const char *path, const char *buf, size_t size,
 		}
 	}
 	printf("Answer from python was: %s\n", seed_read);
+	printf("seed_read's length is: %u\n", strlen(seed_read));
 
 	fseek(disk, block_size * current_block, SEEK_SET);
 	fwrite(seed_read, block_size, 1, disk);
