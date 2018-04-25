@@ -550,7 +550,7 @@ static int fat_mknod(const char *path, mode_t mode, dev_t rdev)
 	}
 
 	block_num = allocate_new_block();
-	printf("block_num is %u.\n", block_num);
+	printf("block_num is %zu.\n", block_num);
 	FAT[block_num] = 0;
 
 	new_metadata.size = 0;
@@ -739,7 +739,7 @@ static int fat_truncate(const char *path, off_t size)
 				/* update metadata and write it back to disk */
 				current_data[i].size = size;
 				num_blocks_needed = size/block_size;
-				printf("Current block is %u in truncate.\n", current_block);
+				printf("Current block is %zu in truncate.\n", current_block);
 				fseek(disk, current_block * block_size, SEEK_SET);
 				fwrite(current_data, sizeof(metadata), max_metadata, disk);
 
@@ -809,7 +809,7 @@ int find_offset(const char *path, size_t starting_block)
 	size_t i;
 	metadata file_metadata;
 
-	printf("starting_block is %u in find_offset.\n", starting_block);
+	printf("starting_block is %zu in find_offset.\n", starting_block);
 
 	find_metadata(path, &file_metadata);
 
@@ -830,7 +830,7 @@ int find_offset(const char *path, size_t starting_block)
 		current_block = FAT[current_block];
 	}
 
-	printf("current_block is %u.\n", current_block);
+	printf("current_block is %zu.\n", current_block);
 
 	return current_block;
 }
@@ -842,6 +842,8 @@ static int fat_read(const char *path, char *buf, size_t size, off_t offset,
 	size_t offset_in_block;
 	size_t bytes_read;
 	size_t starting_block;
+	int write_int;
+	int read_int;
 	char unencoded_read[2 * block_size + 1];
 	char seed_read[block_size + 1];
 
@@ -898,7 +900,7 @@ static int fat_read(const char *path, char *buf, size_t size, off_t offset,
 			fprintf(stderr, "Error opening answer in fat_read.\n");
 		}
 		read_int = read(answer, unencoded_read, 2 * block_size);
-		unencoded_read[2*block_size] = '/0'; // ensure that it is null terminated
+		unencoded_read[2*block_size] = '\0'; // ensure that it is null terminated
 		printf("Read %d bytes.\n", read_int);
 		if (read_int < 0) {
 			fprintf(stderr, "Error reading from answer.\n");
