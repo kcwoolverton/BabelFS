@@ -943,7 +943,7 @@ static int fat_write(const char *path, const char *buf, size_t size,
 	// Read the seed that was already in the disk
 	fseek(disk, block_size * current_block, SEEK_SET);
 	fread(seed_read + 1, block_size, 1, disk);
-	printf("read seed from disk: %s\n", seed_read);
+	printf("Read seed from disk: %s\n", seed_read);
 
 	// Send encoded seed request
 	asker = open("ask", O_WRONLY);
@@ -975,6 +975,7 @@ static int fat_write(const char *path, const char *buf, size_t size,
 	}
 	printf("unencoded_read after fread is: %s\n", unencoded_read);
 
+
 	bytes_read = size;
 
 	if (bytes_read > (block_size - offset)) {
@@ -989,6 +990,7 @@ static int fat_write(const char *path, const char *buf, size_t size,
 	memcpy(unencoded_read + offset_in_block + 1, buf, bytes_read);
 	printf("after memcpy, buf is: %s\n", buf);
 	printf("after memcpy, unencoded_read is: %s\n", unencoded_read);
+	printf("bytes read is %u\n", bytes_read);
 
 	printf("Current block is %u in write.\n", current_block);
 
