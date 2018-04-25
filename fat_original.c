@@ -503,7 +503,7 @@ int write_metadata_to_block(size_t block_num, metadata *file_metadata) {
 				ret++;
 				current_data[i] = *file_metadata;
 				printf("File_metadata name %s\n", current_data[i].name);
-				printf("Flag for metadata %zu\n", current_data[i].file_check);
+				printf("Flag for metadata %d\n", current_data[i].file_check);
 				fseek(disk, current_block * block_size, SEEK_SET);
 				fwrite(current_data, sizeof(metadata), max_metadata, disk);
 				free(current_data);
