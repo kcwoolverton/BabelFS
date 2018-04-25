@@ -1031,7 +1031,7 @@ static int fat_write(const char *path, const char *buf, size_t size,
 		}
 		printf("unencoded_read after fread is: %s\n", unencoded_read);
 
-		if (read_int > 0) {
+		if (read_int >= 0) {
 			break;
 		} else {
 			sleep(1);
