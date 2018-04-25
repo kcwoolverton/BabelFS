@@ -503,7 +503,7 @@ int write_metadata_to_block(size_t block_num, metadata *file_metadata) {
 				ret++;
 				current_data[i] = *file_metadata;
 				printf("File_metadata name %s\n", current_data[i].name);
-				printf("Flag for metadata %u\n", current_data[i].file_check);
+				printf("Flag for metadata %zu\n", current_data[i].file_check);
 				fseek(disk, current_block * block_size, SEEK_SET);
 				fwrite(current_data, sizeof(metadata), max_metadata, disk);
 				free(current_data);
@@ -1046,15 +1046,15 @@ static int fat_write(const char *path, const char *buf, size_t size,
 
 	// We need to copy the changes from buf into our unencoded_read.
 
-	printf("offset_in_block is %u", offset_in_block);
+	printf("offset_in_block is %zu", offset_in_block);
 
 	// Do the write
 	memcpy(unencoded_read + offset_in_block + 1, buf, bytes_read);
 	printf("after memcpy, buf is: %s\n", buf);
 	printf("after memcpy, unencoded_read is: %s\n", unencoded_read);
-	printf("bytes read is %u\n", bytes_read);
+	printf("bytes read is %zu\n", bytes_read);
 
-	printf("Current block is %u in write.\n", current_block);
+	printf("Current block is %zu in write.\n", current_block);
 
 	// Reset seed_read.
 	memset(seed_read, '\0', (block_size + 1) * sizeof(char));
@@ -1096,14 +1096,14 @@ static int fat_write(const char *path, const char *buf, size_t size,
 		}
 	}
 	printf("Answer from python was: %s\n", seed_read);
-	printf("seed_read's length is: %u\n", strlen(seed_read));
+	printf("seed_read's length is: %zu\n", strlen(seed_read));
 
 	fseek(disk, block_size * current_block, SEEK_SET);
 	fwrite(seed_read, block_size, 1, disk);
 
 	printf("wrote to disk\n");
 
-	printf("Bytes read is %u", bytes_read);
+	printf("Bytes read is %zu", bytes_read);
 
 	return bytes_read;
 }
